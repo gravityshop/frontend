@@ -39,19 +39,18 @@ export default function ConfiguratorPage() {
   const uiRef = useRef<HTMLDivElement>(null);
 
   const {
+    editMode,
+    setEditMode,
     activeZone,
     setActiveZone,
     materials,
     setZoneMaterial,
     setColor,
-    customText,
-    setCustomText,
-    textColor,
-    setTextColor,
-    decalPos,
-    decalRot,
-    decalScale,
-    setDecalTransform,
+    decals,
+    selectedDecalId,
+    setSelectedDecalId,
+    updateDecal,
+    removeDecal,
     cameraView,
     setCameraView,
     isCheckoutOpen,
@@ -60,11 +59,6 @@ export default function ConfiguratorPage() {
     snapshotImage,
   } = useConfiguratorStore();
 
-  const [editMode, setEditMode] = useState<"MATERIALS" | "TEXT">("MATERIALS");
-
-  // ==========================================
-  // BUGFIX: Hydration & Mobile Detection
-  // ==========================================
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -76,23 +70,42 @@ export default function ConfiguratorPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Schuh auf dem Handy noch weiter nach oben schieben (1.4 statt 1.2)
-  const yOffset = mounted && isMobile ? 1.4 : 0;
+  // BUGFIX: Auto-Scroll robuster gemacht (mit Timeout), damit React das DOM in Ruhe zeichnen kann
+  useEffect(() => {
+    if (editMode !== "MATERIALS") return;
+    const timer = setTimeout(() => {
+      const activeBtn = document.getElementById(`zone-btn-${activeZone}`);
+      if (activeBtn) {
+        activeBtn.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [activeZone, editMode]);
 
-  const BASE_PRICE = 290;
+  const yOffset = mounted && isMobile ? 1.4 : 0;
   const totalPrice =
-    BASE_PRICE +
+    290 +
     Object.values(materials).reduce((acc, mat) => acc + mat.priceOffset, 0);
 
+  // UX UPDATE: BASE MESH WURDE HIER KOMPLETT GELÖSCHT!
   const zones = [
+    { id: "schnuehsenkel", label: "LACES" },
+    { id: "schuhzuenge", label: "TONGUE" },
     { id: "zohle", label: "SOLE UNIT" },
+    { id: "unten", label: "BOTTOM TREAD" },
     { id: "vorne", label: "TOE GUARD" },
     { id: "vorne-oben", label: "UPPER TOE" },
     { id: "seiten", label: "LATERAL SIDES" },
     { id: "seiten-oben", label: "UPPER SIDES" },
+    { id: "seiten-hinter", label: "REAR SIDES" },
+    { id: "seiten-unten", label: "LOWER SIDES" },
     { id: "hinter", label: "HEEL COUNTER" },
     { id: "hinter-oben", label: "UPPER HEEL" },
-    { id: "All", label: "BASE MESH" },
+    { id: "innen", label: "LINING (INSIDE)" },
   ];
 
   useLayoutEffect(() => {
@@ -121,10 +134,22 @@ export default function ConfiguratorPage() {
     }
   };
 
+  const activeDecal = decals.find((d) => d.id === selectedDecalId);
+
+  const handleSliderChange = (
+    axis: 0 | 1 | 2,
+    val: number,
+    type: "pos" | "rot" | "scale",
+  ) => {
+    if (!activeDecal) return;
+    const newArr = [...activeDecal[type]] as [number, number, number];
+    newArr[axis] = val;
+    updateDecal(activeDecal.id, { [type]: newArr });
+  };
+
   return (
-    <div className="w-full h-[100dvh] bg-[#050505] overflow-hidden selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
-      {/* 3D CANVAS */}
-      <div className="absolute inset-0 z-0 cursor-move bg-[radial-gradient(ellipse_at_center,_#262626_0%,_#050505_70%)]">
+    <div className="w-full h-dvh bg-[#050505] overflow-hidden selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
+      <div className="absolute inset-0 z-0 cursor-move bg-[radial-gradient(ellipse_at_center,#262626_0%,#050505_70%)]">
         <Canvas
           gl={{ preserveDrawingBuffer: true }}
           camera={{ position: [3.5, 1, 4.5], fov: 45 }}
@@ -145,7 +170,6 @@ export default function ConfiguratorPage() {
             color="#a3a3a3"
           />
           <Environment preset="city" environmentIntensity={1} />
-
           <Suspense fallback={<Loader />}>
             <group position={[0, yOffset, 0]}>
               <Center position={[0, 0.8, 0]}>
@@ -161,9 +185,8 @@ export default function ConfiguratorPage() {
               />
             </group>
           </Suspense>
-
           <OrbitControls
-            target={[0, 0.1 + yOffset, 0]}
+            target={[0, 0.8 + yOffset, 0]}
             enablePan={false}
             minDistance={2}
             maxDistance={6}
@@ -172,12 +195,10 @@ export default function ConfiguratorPage() {
         </Canvas>
       </div>
 
-      {/* UI OVERLAY */}
       <div
         ref={uiRef}
         className={`absolute inset-0 z-10 pointer-events-none flex flex-col justify-between transition-opacity duration-500 ${isCheckoutOpen ? "opacity-0" : "opacity-100"}`}
       >
-        {/* HEADER */}
         <header className="flex justify-between items-start conf-ui pointer-events-auto p-4 md:p-12">
           <Link
             href="/"
@@ -192,7 +213,6 @@ export default function ConfiguratorPage() {
             <div className="text-sm md:text-xl text-white font-bold tracking-widest mt-1 md:mt-2">
               € {totalPrice.toFixed(2)}
             </div>
-
             <div className="hidden md:flex gap-3 mt-4 text-[9px] font-bold tracking-[0.3em] uppercase">
               {(["PROFILE", "FRONT", "HEEL", "TOP"] as const).map((view) => (
                 <button
@@ -207,12 +227,12 @@ export default function ConfiguratorPage() {
           </div>
         </header>
 
-        {/* DESKTOP LEFT MENU */}
         <div className="hidden md:flex flex-col gap-2 absolute left-12 top-1/2 -translate-y-1/2 pointer-events-auto conf-ui">
           {editMode === "MATERIALS" &&
             zones.map((zone) => (
               <button
                 key={zone.id}
+                id={`zone-btn-desktop-${zone.id}`}
                 onClick={() => setActiveZone(zone.id)}
                 className={`text-left text-sm font-bold tracking-[0.2em] uppercase py-3 px-6 border-l-2 transition-all duration-300 ${activeZone === zone.id ? "border-white text-white bg-white/10" : "border-transparent text-neutral-500 hover:text-white"}`}
               >
@@ -221,9 +241,6 @@ export default function ConfiguratorPage() {
             ))}
         </div>
 
-        {/* ==========================================
-            BUGFIX: EXTREM KOMPAKTES MOBILE HUD
-        ========================================== */}
         <div className="mt-auto conf-ui pointer-events-auto w-full max-w-6xl mx-auto flex flex-col px-2 pb-4 md:px-8 md:pb-8">
           <div className="flex gap-4 md:gap-6 mb-2 md:mb-6 text-[10px] md:text-xs font-bold tracking-[0.2em] justify-center md:justify-start drop-shadow-md">
             <button
@@ -240,15 +257,14 @@ export default function ConfiguratorPage() {
             </button>
           </div>
 
-          {/* Dünneres Padding auf Mobile (p-3 statt p-4) */}
           <div className="bg-[#050505]/95 backdrop-blur-xl border border-neutral-900 rounded-xl p-3 md:p-8 flex flex-col w-full shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
             {editMode === "MATERIALS" ? (
               <div className="flex flex-col w-full">
-                {/* MOBILE ZONES */}
                 <div className="md:hidden flex overflow-x-auto gap-2 pb-2 mb-2 border-b border-neutral-900 custom-scrollbar">
                   {zones.map((zone) => (
                     <button
                       key={zone.id}
+                      id={`zone-btn-${zone.id}`}
                       onClick={() => setActiveZone(zone.id)}
                       className={`whitespace-nowrap text-[8px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-md transition-colors ${activeZone === zone.id ? "bg-white text-black" : "bg-neutral-900 text-neutral-400"}`}
                     >
@@ -259,7 +275,6 @@ export default function ConfiguratorPage() {
 
                 <div className="flex flex-col md:flex-row gap-2 md:gap-6 w-full justify-between items-start md:items-center">
                   <div className="flex flex-col w-full overflow-hidden">
-                    {/* HEADER & HEX PICKER (Jetzt in einer extrem flachen Reihe) */}
                     <div className="flex justify-between items-center mb-2 md:mb-4 gap-2">
                       <span className="hidden md:block text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500">
                         Material for:{" "}
@@ -278,7 +293,7 @@ export default function ConfiguratorPage() {
                               type="color"
                               value={
                                 materials[activeZone as keyof typeof materials]
-                                  .hex
+                                  ?.hex || "#ffffff"
                               }
                               onChange={(e) =>
                                 setColor(activeZone, e.target.value)
@@ -288,9 +303,11 @@ export default function ConfiguratorPage() {
                           </div>
                           <input
                             type="text"
-                            value={materials[
-                              activeZone as keyof typeof materials
-                            ].hex.toUpperCase()}
+                            value={
+                              materials[
+                                activeZone as keyof typeof materials
+                              ]?.hex.toUpperCase() || ""
+                            }
                             onChange={(e) =>
                               setColor(activeZone, e.target.value)
                             }
@@ -300,13 +317,12 @@ export default function ConfiguratorPage() {
                       </div>
                     </div>
 
-                    {/* MATERIAL CARDS (Kompakter auf Mobile: w-16 h-24) */}
                     <div className="flex overflow-x-auto gap-2 pb-2 custom-scrollbar snap-x">
                       {PREMIUM_MATERIALS.map((mat) => (
                         <button
                           key={mat.name}
                           onClick={() => setZoneMaterial(activeZone, mat)}
-                          className={`snap-center shrink-0 w-16 h-24 md:w-28 md:h-36 rounded-md flex flex-col items-center justify-center p-1 md:p-2 border-2 transition-all ${materials[activeZone as keyof typeof materials].name === mat.name ? "border-white bg-white/10" : "border-neutral-900 hover:border-neutral-700 bg-[#0a0a0a]"}`}
+                          className={`snap-center shrink-0 w-16 h-24 md:w-28 md:h-36 rounded-md flex flex-col items-center justify-center p-1 md:p-2 border-2 transition-all ${materials[activeZone as keyof typeof materials]?.name === mat.name ? "border-white bg-white/10" : "border-neutral-900 hover:border-neutral-700 bg-[#0a0a0a]"}`}
                         >
                           <div
                             className="w-6 h-6 md:w-14 md:h-14 rounded-full border border-neutral-700 mb-1.5 md:mb-2 shadow-inner"
@@ -333,161 +349,231 @@ export default function ConfiguratorPage() {
 
                   <button
                     onClick={handleCapture}
-                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-3 md:py-6 px-6 md:px-10 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
+                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-3 md:py-6 px-6 md:px-10 hover:bg-neutral-300 transition-colors w-full md:w-auto mt-2 md:mt-0 rounded-sm"
                   >
                     FINALIZE
                   </button>
                 </div>
               </div>
             ) : (
-              // CUSTOM TEXT MODE (Kompakter)
               <div className="flex flex-col w-full gap-2 md:gap-4">
-                <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 w-full justify-between pb-2">
-                  <div className="flex items-center gap-2 md:gap-4 w-full max-w-md">
-                    <input
-                      type="text"
-                      value={customText}
-                      onChange={(e) => setCustomText(e.target.value)}
-                      placeholder="ENTER TEXT"
-                      className="bg-transparent border-b border-neutral-800 py-1 md:py-2 font-['Anton'] text-lg md:text-2xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
-                    />
-                    <div className="relative w-8 h-8 md:w-10 md:h-10 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
-                      <input
-                        type="color"
-                        value={textColor}
-                        onChange={(e) => setTextColor(e.target.value)}
-                        className="absolute -top-2 -left-2 w-16 h-16 cursor-pointer"
-                      />
+                <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2">
+                  {decals.map((decal) => (
+                    <div
+                      key={decal.id}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors shrink-0 ${selectedDecalId === decal.id ? "border-white bg-white/10" : "border-neutral-800 bg-black"}`}
+                    >
+                      <button
+                        onClick={() => setSelectedDecalId(decal.id)}
+                        className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-[40px] text-left"
+                      >
+                        {decal.text || "EMPTY"}
+                      </button>
+                      <button
+                        onClick={() => removeDecal(decal.id)}
+                        className="text-neutral-500 hover:text-red-500 text-xs ml-2"
+                      >
+                        ×
+                      </button>
                     </div>
+                  ))}
+                  <div className="text-[8px] md:text-[9px] font-bold tracking-[0.3em] text-neutral-500 uppercase px-3 py-2 border border-dashed border-neutral-800 rounded-full shrink-0">
+                    + DOUBLE CLICK SHOE TO ADD TEXT
                   </div>
-                  <button
-                    onClick={handleCapture}
-                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-2 md:py-4 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
-                  >
-                    FINALIZE
-                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full text-[8px] md:text-[9px] tracking-widest text-neutral-400 pt-2 md:pt-4 border-t border-neutral-900">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-white">POS (X,Y,Z)</span>
-                    <input
-                      type="range"
-                      min="-3"
-                      max="3"
-                      step="0.01"
-                      value={decalPos[0]}
-                      onChange={(e) =>
-                        setDecalTransform("pos", 0, parseFloat(e.target.value))
-                      }
-                    />
-                    <input
-                      type="range"
-                      min="-3"
-                      max="3"
-                      step="0.01"
-                      value={decalPos[1]}
-                      onChange={(e) =>
-                        setDecalTransform("pos", 1, parseFloat(e.target.value))
-                      }
-                    />
-                    <input
-                      type="range"
-                      min="-3"
-                      max="3"
-                      step="0.01"
-                      value={decalPos[2]}
-                      onChange={(e) =>
-                        setDecalTransform("pos", 2, parseFloat(e.target.value))
-                      }
-                    />
+                {activeDecal ? (
+                  <>
+                    <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 w-full justify-between pb-2">
+                      <div className="flex items-center gap-2 md:gap-4 w-full max-w-md">
+                        <input
+                          type="text"
+                          value={activeDecal.text}
+                          onChange={(e) =>
+                            updateDecal(activeDecal.id, {
+                              text: e.target.value.toUpperCase().slice(0, 10),
+                            })
+                          }
+                          placeholder="ENTER TEXT"
+                          className="bg-transparent border-b border-neutral-800 py-1 md:py-2 font-['Anton'] text-lg md:text-2xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
+                        />
+                        <div className="relative w-8 h-8 md:w-10 md:h-10 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
+                          <input
+                            type="color"
+                            value={activeDecal.color}
+                            onChange={(e) =>
+                              updateDecal(activeDecal.id, {
+                                color: e.target.value,
+                              })
+                            }
+                            className="absolute -top-2 -left-2 w-16 h-16 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleCapture}
+                        className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-2 md:py-4 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
+                      >
+                        FINALIZE
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full text-[8px] md:text-[9px] tracking-widest text-neutral-400 pt-2 md:pt-4 border-t border-neutral-900">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-white">
+                          POS (X,Y,Z)
+                        </span>
+                        <input
+                          type="range"
+                          min="-3"
+                          max="3"
+                          step="0.01"
+                          value={activeDecal.pos[0]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              0,
+                              parseFloat(e.target.value),
+                              "pos",
+                            )
+                          }
+                        />
+                        <input
+                          type="range"
+                          min="-3"
+                          max="3"
+                          step="0.01"
+                          value={activeDecal.pos[1]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              1,
+                              parseFloat(e.target.value),
+                              "pos",
+                            )
+                          }
+                        />
+                        <input
+                          type="range"
+                          min="-3"
+                          max="3"
+                          step="0.01"
+                          value={activeDecal.pos[2]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              2,
+                              parseFloat(e.target.value),
+                              "pos",
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-white">
+                          ROT (X,Y,Z)
+                        </span>
+                        <input
+                          type="range"
+                          min="-3.14"
+                          max="3.14"
+                          step="0.01"
+                          value={activeDecal.rot[0]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              0,
+                              parseFloat(e.target.value),
+                              "rot",
+                            )
+                          }
+                        />
+                        <input
+                          type="range"
+                          min="-3.14"
+                          max="3.14"
+                          step="0.01"
+                          value={activeDecal.rot[1]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              1,
+                              parseFloat(e.target.value),
+                              "rot",
+                            )
+                          }
+                        />
+                        <input
+                          type="range"
+                          min="-3.14"
+                          max="3.14"
+                          step="0.01"
+                          value={activeDecal.rot[2]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              2,
+                              parseFloat(e.target.value),
+                              "rot",
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-bold text-white">
+                          SCALE (X,Y,Z)
+                        </span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="2"
+                          step="0.01"
+                          value={activeDecal.scale[0]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              0,
+                              parseFloat(e.target.value),
+                              "scale",
+                            )
+                          }
+                        />
+                        <input
+                          type="range"
+                          min="0"
+                          max="2"
+                          step="0.01"
+                          value={activeDecal.scale[1]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              1,
+                              parseFloat(e.target.value),
+                              "scale",
+                            )
+                          }
+                        />
+                        <input
+                          type="range"
+                          min="0"
+                          max="2"
+                          step="0.01"
+                          value={activeDecal.scale[2]}
+                          onChange={(e) =>
+                            handleSliderChange(
+                              2,
+                              parseFloat(e.target.value),
+                              "scale",
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full text-center py-6">
+                    <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-neutral-600">
+                      NO TEXT SELECTED
+                    </span>
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-white">ROT (X,Y,Z)</span>
-                    <input
-                      type="range"
-                      min="-3.14"
-                      max="3.14"
-                      step="0.01"
-                      value={decalRot[0]}
-                      onChange={(e) =>
-                        setDecalTransform("rot", 0, parseFloat(e.target.value))
-                      }
-                    />
-                    <input
-                      type="range"
-                      min="-3.14"
-                      max="3.14"
-                      step="0.01"
-                      value={decalRot[1]}
-                      onChange={(e) =>
-                        setDecalTransform("rot", 1, parseFloat(e.target.value))
-                      }
-                    />
-                    <input
-                      type="range"
-                      min="-3.14"
-                      max="3.14"
-                      step="0.01"
-                      value={decalRot[2]}
-                      onChange={(e) =>
-                        setDecalTransform("rot", 2, parseFloat(e.target.value))
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-white">SCALE (X,Y,Z)</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      value={decalScale[0]}
-                      onChange={(e) =>
-                        setDecalTransform(
-                          "scale",
-                          0,
-                          parseFloat(e.target.value),
-                        )
-                      }
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      value={decalScale[1]}
-                      onChange={(e) =>
-                        setDecalTransform(
-                          "scale",
-                          1,
-                          parseFloat(e.target.value),
-                        )
-                      }
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="0.01"
-                      value={decalScale[2]}
-                      onChange={(e) =>
-                        setDecalTransform(
-                          "scale",
-                          2,
-                          parseFloat(e.target.value),
-                        )
-                      }
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* CHECKOUT OVERLAY (RESPONSIVE MASTER) */}
       {isCheckoutOpen && snapshotImage && (
         <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex items-end md:items-center justify-center p-0 md:p-6 animate-in fade-in duration-300">
           <div className="bg-[#0a0a0a] border-t md:border border-neutral-800 w-full max-w-6xl flex flex-col md:flex-row h-[92dvh] md:h-full md:max-h-[80vh] overflow-hidden rounded-t-2xl md:rounded-xl shadow-[0_-20px_60px_rgba(0,0,0,0.8)] md:shadow-2xl">
@@ -504,7 +590,6 @@ export default function ConfiguratorPage() {
                 className="w-full h-full object-contain drop-shadow-2xl relative z-0"
               />
             </div>
-
             <div className="w-full md:w-1/2 flex flex-col h-[65%] md:h-auto bg-[#0a0a0a]">
               <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12">
                 <h2 className="font-['Anton'] text-3xl md:text-5xl text-white uppercase mb-1 md:mb-2">
@@ -513,40 +598,42 @@ export default function ConfiguratorPage() {
                 <div className="text-neutral-500 text-[9px] md:text-[10px] tracking-[0.3em] font-bold mb-6 md:mb-10">
                   CUSTOM ARCHITECTURE // VERIFIED
                 </div>
-
                 <div className="space-y-3 md:space-y-4 pb-4">
-                  {Object.entries(materials).map(([zone, mat]) => (
-                    <div
-                      key={zone}
-                      className="flex justify-between items-center text-[9px] md:text-[10px] tracking-widest uppercase"
-                    >
-                      <span className="text-neutral-500">
-                        {zones.find((z) => z.id === zone)?.label}
-                      </span>
-                      <span className="text-white flex items-center gap-2 md:gap-3">
-                        <span className="text-right">{mat.name}</span>
-                        <div
-                          className="w-3 h-3 shrink-0 rounded-full border border-neutral-700"
-                          style={{
-                            backgroundColor: mat.hex,
-                            backgroundImage: mat.textureUrl
-                              ? `url(${mat.textureUrl})`
-                              : "none",
-                            backgroundSize: "cover",
-                          }}
-                        />
-                      </span>
-                    </div>
-                  ))}
-                  {customText && (
+                  {Object.entries(materials)
+                    .filter(([zone]) => zone !== "All") // Zeigt Base Mesh auch im Checkout nicht mehr an
+                    .map(([zone, mat]) => (
+                      <div
+                        key={zone}
+                        className="flex justify-between items-center text-[9px] md:text-[10px] tracking-widest uppercase"
+                      >
+                        <span className="text-neutral-500">
+                          {zones.find((z) => z.id === zone)?.label}
+                        </span>
+                        <span className="text-white flex items-center gap-2 md:gap-3">
+                          <span className="text-right">{mat.name}</span>
+                          <div
+                            className="w-3 h-3 shrink-0 rounded-full border border-neutral-700"
+                            style={{
+                              backgroundColor: mat.hex,
+                              backgroundImage: mat.textureUrl
+                                ? `url(${mat.textureUrl})`
+                                : "none",
+                              backgroundSize: "cover",
+                            }}
+                          />
+                        </span>
+                      </div>
+                    ))}
+                  {decals.length > 0 && (
                     <div className="flex justify-between items-center text-[9px] md:text-[10px] tracking-widest uppercase pt-3 md:pt-4 border-t border-neutral-900">
-                      <span className="text-neutral-500">APPLIED TEXT</span>
-                      <span className="text-white">"{customText}"</span>
+                      <span className="text-neutral-500">APPLIED TEXTS</span>
+                      <span className="text-white">
+                        {decals.map((d) => `"${d.text}"`).join(", ")}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
-
               <div className="shrink-0 p-6 md:p-12 border-t border-neutral-900 bg-[#080808]">
                 <div className="flex justify-between items-end mb-4 md:mb-6">
                   <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-neutral-500 uppercase">

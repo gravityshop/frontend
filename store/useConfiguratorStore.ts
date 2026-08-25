@@ -9,6 +9,16 @@ export interface MaterialConfig {
     textureUrl?: string;
 }
 
+export interface DecalObj {
+    id: string;
+    meshId: string;
+    text: string;
+    color: string;
+    pos: [number, number, number];
+    rot: [number, number, number];
+    scale: [number, number, number];
+}
+
 export const PREMIUM_MATERIALS: MaterialConfig[] = [
     { name: "PITCH BLACK (MATTE)", hex: "#111111", roughness: 0.9, metalness: 0.1, priceOffset: 0 },
     { name: "LIQUID ONYX (GLOSS)", hex: "#050505", roughness: 0.05, metalness: 0.9, priceOffset: 40 },
@@ -23,74 +33,84 @@ export const PREMIUM_MATERIALS: MaterialConfig[] = [
 ];
 
 interface ConfiguratorState {
+    editMode: "MATERIALS" | "TEXT";
+    setEditMode: (mode: "MATERIALS" | "TEXT") => void;
+
     materials: Record<string, MaterialConfig>;
     activeZone: string;
-    customText: string;
-    textColor: string;
-    decalPos: [number, number, number];
-    decalRot: [number, number, number];
-    decalScale: [number, number, number];
+
+    // UX UPDATE: Layer-System für Texte
+    decals: DecalObj[];
+    selectedDecalId: string | null; // Welcher Text wird gerade bearbeitet?
+
     cameraView: "PROFILE" | "FRONT" | "HEEL" | "TOP";
     isCheckoutOpen: boolean;
     snapshotImage: string | null;
 
     setZoneMaterial: (zone: string, mat: MaterialConfig) => void;
-    setColor: (zone: string, color: string) => void; // HIER IST DER HEX-PICKER ZURÜCK
+    setColor: (zone: string, color: string) => void;
     setActiveZone: (zone: string) => void;
-    setCustomText: (text: string) => void;
-    setTextColor: (color: string) => void;
-    setDecalTransform: (type: 'pos' | 'rot' | 'scale', axis: 0 | 1 | 2, value: number) => void;
+
+    // Neue Text-Funktionen
+    addDecal: (decal: DecalObj) => void;
+    updateDecal: (id: string, updates: Partial<DecalObj>) => void;
+    removeDecal: (id: string) => void;
+    setSelectedDecalId: (id: string | null) => void;
+
     setCameraView: (view: "PROFILE" | "FRONT" | "HEEL" | "TOP") => void;
     openCheckout: (image: string) => void;
     closeCheckout: () => void;
 }
 
 export const useConfiguratorStore = create<ConfiguratorState>((set) => ({
+    editMode: "MATERIALS",
+    setEditMode: (mode) => set({ editMode: mode }),
+
     materials: {
         All: PREMIUM_MATERIALS[0],
         hinter: PREMIUM_MATERIALS[0],
         "hinter-oben": PREMIUM_MATERIALS[0],
+        innen: PREMIUM_MATERIALS[0],
+        schnuehsenkel: PREMIUM_MATERIALS[4],
+        schuhzuenge: PREMIUM_MATERIALS[0],
         seiten: PREMIUM_MATERIALS[0],
+        "seiten-hinter": PREMIUM_MATERIALS[0],
         "seiten-oben": PREMIUM_MATERIALS[0],
+        "seiten-unten": PREMIUM_MATERIALS[0],
+        unten: PREMIUM_MATERIALS[0],
         vorne: PREMIUM_MATERIALS[0],
         "vorne-oben": PREMIUM_MATERIALS[0],
         zohle: PREMIUM_MATERIALS[4],
     },
-    activeZone: "zohle",
-    customText: "",
-    textColor: "#ffffff",
-    decalPos: [1.2, 0.5, 0],
-    decalRot: [0, Math.PI / 2, 0],
-    decalScale: [0.3, 0.3, 0.3],
+    activeZone: "seiten",
+
+    decals: [],
+    selectedDecalId: null,
+
     cameraView: "PROFILE",
     isCheckoutOpen: false,
     snapshotImage: null,
 
     setZoneMaterial: (zone, mat) => set((state) => ({ materials: { ...state.materials, [zone]: mat } })),
-
-    // Die neue Super-Funktion: Überschreibt nur die Farbe, behält Glanz/Metall-Werte des aktiven Materials!
     setColor: (zone, color) => set((state) => ({
         materials: {
             ...state.materials,
-            [zone]: {
-                ...state.materials[zone],
-                name: "CUSTOM PAINT",
-                hex: color,
-                textureUrl: undefined // Entfernt das Tier-Bild, damit die Farbe sichtbar wird
-            }
+            [zone]: { ...state.materials[zone], name: "CUSTOM PAINT", hex: color, textureUrl: undefined }
         }
     })),
-
     setActiveZone: (zone) => set({ activeZone: zone }),
-    setCustomText: (text) => set({ customText: text.toUpperCase().slice(0, 10) }),
-    setTextColor: (color) => set({ textColor: color }),
-    setDecalTransform: (type, axis, value) =>
-        set((state) => {
-            const key = type === 'pos' ? 'decalPos' : type === 'rot' ? 'decalRot' : 'decalScale';
-            const newTransform = [...state[key]] as [number, number, number];
-            newTransform[axis] = value;
-            return { [key]: newTransform };
-        }),
+
+    // UX UPDATE: Layer Management
+    addDecal: (decal) => set((state) => ({ decals: [...state.decals, decal], selectedDecalId: decal.id })),
+    updateDecal: (id, updates) => set((state) => ({
+        decals: state.decals.map(d => d.id === id ? { ...d, ...updates } : d)
+    })),
+    removeDecal: (id) => set((state) => {
+        const newDecals = state.decals.filter(d => d.id !== id);
+        return { decals: newDecals, selectedDecalId: state.selectedDecalId === id ? null : state.selectedDecalId };
+    }),
+    setSelectedDecalId: (id) => set({ selectedDecalId: id }),
+
     setCameraView: (view) => set({ cameraView: view }),
     openCheckout: (image) => set({ isCheckoutOpen: true, snapshotImage: image }),
     closeCheckout: () => set({ isCheckoutOpen: false, snapshotImage: null }),
