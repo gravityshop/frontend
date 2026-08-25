@@ -365,7 +365,7 @@ export default function ConfiguratorPage() {
                     >
                       <button
                         onClick={() => setSelectedDecalId(decal.id)}
-                        className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-[40px] text-left"
+                        className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-10 text-left"
                       >
                         {decal.text || "EMPTY"}
                       </button>
