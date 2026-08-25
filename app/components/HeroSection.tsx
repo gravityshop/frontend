@@ -59,7 +59,7 @@ export default function HeroSection() {
         {/* Haupt-Headline: M O N O L I T H */}
         <div className="overflow-hidden p-2 w-full flex justify-center">
           {/* Größen leicht reduziert (16vw auf Mobile, 12vw auf Desktop), damit das längere Wort perfekt passt */}
-          <h1 className="hero-text-line font-['Anton'] text-[16vw] md:text-[6vw] leading-[0.8] text-white uppercase tracking-tighter mix-blend-overlay whitespace-nowrap">
+          <h1 className="hero-text-line font-['Anton'] text-[14vw] md:text-[6vw] leading-[0.8] text-white uppercase tracking-tighter mix-blend-overlay whitespace-nowrap">
             A B S O L U T E
           </h1>
         </div>

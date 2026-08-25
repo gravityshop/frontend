@@ -86,14 +86,14 @@ const EditorialOne = () => {
       >
         <div className="overflow-hidden p-2 -ml-1 md:-ml-2">
           {/* Mobile bleibt riesig (22vw), Desktop wird dezent (8vw/6vw) */}
-          <h6 className="ed-text-line font-['Anton'] text-[22vw] md:text-[8vw] lg:text-[6vw] leading-[0.85] md:leading-[0.9] text-white uppercase mix-blend-plus-darker whitespace-nowrap">
+          <h6 className="ed-text-line font-['Anton'] text-[18vw] md:text-[8vw] lg:text-[6vw] leading-[0.85] md:leading-[0.9] text-white uppercase mix-blend-plus-darker whitespace-nowrap">
             URBAN
           </h6>
         </div>
 
         {/* Flex-Container, um auf Desktop den kleinen Subtext daneben zu setzen */}
         <div className="overflow-hidden p-2 -ml-1 md:-ml-2 flex flex-col md:flex-row md:items-end md:gap-8">
-          <h6 className="ed-text-line font-['Anton'] text-[22vw] md:text-[8vw] lg:text-[6vw] leading-[0.85] md:leading-[0.9] text-white uppercase mix-blend-difference whitespace-nowrap">
+          <h6 className="ed-text-line font-['Anton'] text-[12vw] md:text-[8vw] lg:text-[6vw] leading-[0.85] md:leading-[0.9] text-white uppercase mix-blend-difference whitespace-nowrap">
             AVANT-GARDE
           </h6>
 

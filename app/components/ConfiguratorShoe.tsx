@@ -12,14 +12,12 @@ type GLTFResult = GLTF & {
   nodes: { [key: string]: THREE.Mesh };
 };
 
-// Responsiver Camera-Rig (Zieht die Kamera auf dem Handy etwas zurück)
 function CameraRig() {
   const { camera } = useThree();
   const { cameraView } = useConfiguratorStore();
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   useEffect(() => {
-    // Auf Mobile zoomen wir etwas weiter raus, damit der Schuh Platz hat
     const m = isMobile ? 1.3 : 1;
     const positions = {
       PROFILE: { x: 3.5 * m, y: 1.0, z: 4.5 * m },
@@ -67,19 +65,19 @@ export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
     const matConfig = materials[name];
     const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
-    // Lädt Texturen sicher im Hintergrund (verhindert Abstürze, falls das Bild nicht da ist)
     useEffect(() => {
       if (matConfig.textureUrl) {
         new THREE.TextureLoader().load(
           matConfig.textureUrl,
           (tex) => {
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(3, 3); // Wie oft sich das Muster wiederholt
+            tex.repeat.set(4, 4);
+            tex.colorSpace = THREE.SRGBColorSpace;
             setTexture(tex);
           },
           undefined,
           () => setTexture(null),
-        ); // Fehlerfall ignorieren
+        );
       } else {
         setTexture(null);
       }
@@ -89,7 +87,10 @@ export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
     material.color = new THREE.Color(matConfig.hex);
     material.roughness = matConfig.roughness;
     material.metalness = matConfig.metalness;
-    if (texture) material.map = texture;
+
+    // HIER IST DAS UPDATE:
+    material.map = texture || null;
+    material.needsUpdate = true;
 
     return (
       <mesh

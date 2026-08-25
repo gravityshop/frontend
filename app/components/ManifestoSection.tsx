@@ -107,7 +107,7 @@ export default function ManifestoSection() {
           <div className="mb-8 md:mb-12">
             {/* Responsiver negativer Margin (-ml-2 auf Mobile, -ml-11 auf Desktop) */}
             <div className="overflow-hidden p-2 -ml-2 md:-ml-11 pr-52 md:pr-5">
-              <h3 className="manifesto-headline font-['Anton'] text-[15vw] md:text-[12vw] lg:text-[7vw] leading-[0.85] uppercase text-white whitespace-nowrap">
+              <h3 className="manifesto-headline font-['Anton'] text-[13vw] md:text-[12vw] lg:text-[7vw] leading-[0.85] uppercase text-white whitespace-nowrap">
                 STRUCTURAL
               </h3>
             </div>

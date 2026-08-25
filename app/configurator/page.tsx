@@ -1,6 +1,12 @@
 "use client";
 
-import React, { Suspense, useRef, useLayoutEffect, useState } from "react";
+import React, {
+  Suspense,
+  useRef,
+  useLayoutEffect,
+  useState,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { Canvas } from "@react-three/fiber";
@@ -37,6 +43,7 @@ export default function ConfiguratorPage() {
     setActiveZone,
     materials,
     setZoneMaterial,
+    setColor,
     customText,
     setCustomText,
     textColor,
@@ -54,6 +61,23 @@ export default function ConfiguratorPage() {
   } = useConfiguratorStore();
 
   const [editMode, setEditMode] = useState<"MATERIALS" | "TEXT">("MATERIALS");
+
+  // ==========================================
+  // BUGFIX: Hydration & Mobile Detection
+  // ==========================================
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Schuh auf dem Handy noch weiter nach oben schieben (1.4 statt 1.2)
+  const yOffset = mounted && isMobile ? 1.4 : 0;
 
   const BASE_PRICE = 290;
   const totalPrice =
@@ -98,7 +122,6 @@ export default function ConfiguratorPage() {
   };
 
   return (
-    // h-[100dvh] verhindert auf dem Handy das Scrollen durch die Adressleiste
     <div className="w-full h-[100dvh] bg-[#050505] overflow-hidden selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
       {/* 3D CANVAS */}
       <div className="absolute inset-0 z-0 cursor-move bg-[radial-gradient(ellipse_at_center,_#262626_0%,_#050505_70%)]">
@@ -124,21 +147,23 @@ export default function ConfiguratorPage() {
           <Environment preset="city" environmentIntensity={1} />
 
           <Suspense fallback={<Loader />}>
-            <Center position={[0, 0.8, 0]}>
-              <ConfiguratorShoe />
-            </Center>
-            <ContactShadows
-              position={[0, -0.2, 0]}
-              opacity={0.9}
-              scale={10}
-              blur={2.5}
-              far={4}
-              color="#000000"
-            />
+            <group position={[0, yOffset, 0]}>
+              <Center position={[0, 0.8, 0]}>
+                <ConfiguratorShoe />
+              </Center>
+              <ContactShadows
+                position={[0, -0.2, 0]}
+                opacity={0.9}
+                scale={10}
+                blur={2.5}
+                far={4}
+                color="#000000"
+              />
+            </group>
           </Suspense>
 
           <OrbitControls
-            target={[0, 0.8, 0]}
+            target={[0, 0.1 + yOffset, 0]}
             enablePan={false}
             minDistance={2}
             maxDistance={6}
@@ -168,7 +193,6 @@ export default function ConfiguratorPage() {
               € {totalPrice.toFixed(2)}
             </div>
 
-            {/* KAMERA (Auf Mobile versteckt für mehr Platz) */}
             <div className="hidden md:flex gap-3 mt-4 text-[9px] font-bold tracking-[0.3em] uppercase">
               {(["PROFILE", "FRONT", "HEEL", "TOP"] as const).map((view) => (
                 <button
@@ -183,9 +207,7 @@ export default function ConfiguratorPage() {
           </div>
         </header>
 
-        {/* ==========================================
-            UX FIX: DESKTOP LEFT MENU
-        ========================================== */}
+        {/* DESKTOP LEFT MENU */}
         <div className="hidden md:flex flex-col gap-2 absolute left-12 top-1/2 -translate-y-1/2 pointer-events-auto conf-ui">
           {editMode === "MATERIALS" &&
             zones.map((zone) => (
@@ -200,11 +222,10 @@ export default function ConfiguratorPage() {
         </div>
 
         {/* ==========================================
-            UX FIX: MOBILE & BOTTOM HUD
+            BUGFIX: EXTREM KOMPAKTES MOBILE HUD
         ========================================== */}
-        <div className="mt-auto conf-ui pointer-events-auto w-full max-w-6xl mx-auto flex flex-col p-4 md:p-8">
-          {/* TAB SWITCHER */}
-          <div className="flex gap-6 mb-4 md:mb-6 text-xs font-bold tracking-[0.2em] justify-center md:justify-start">
+        <div className="mt-auto conf-ui pointer-events-auto w-full max-w-6xl mx-auto flex flex-col px-2 pb-4 md:px-8 md:pb-8">
+          <div className="flex gap-4 md:gap-6 mb-2 md:mb-6 text-[10px] md:text-xs font-bold tracking-[0.2em] justify-center md:justify-start drop-shadow-md">
             <button
               onClick={() => setEditMode("MATERIALS")}
               className={`transition-colors py-2 ${editMode === "MATERIALS" ? "text-white border-b-2 border-white" : "text-neutral-500"}`}
@@ -219,41 +240,76 @@ export default function ConfiguratorPage() {
             </button>
           </div>
 
-          <div className="bg-[#050505]/95 backdrop-blur-xl border border-neutral-900 rounded-lg p-4 md:p-8 flex flex-col w-full shadow-2xl">
+          {/* Dünneres Padding auf Mobile (p-3 statt p-4) */}
+          <div className="bg-[#050505]/95 backdrop-blur-xl border border-neutral-900 rounded-xl p-3 md:p-8 flex flex-col w-full shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
             {editMode === "MATERIALS" ? (
               <div className="flex flex-col w-full">
-                {/* MOBILE ZONES: Horizontales Scrollen */}
-                <div className="md:hidden flex overflow-x-auto gap-2 pb-4 mb-4 border-b border-neutral-900 custom-scrollbar">
+                {/* MOBILE ZONES */}
+                <div className="md:hidden flex overflow-x-auto gap-2 pb-2 mb-2 border-b border-neutral-900 custom-scrollbar">
                   {zones.map((zone) => (
                     <button
                       key={zone.id}
                       onClick={() => setActiveZone(zone.id)}
-                      className={`whitespace-nowrap text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-colors ${activeZone === zone.id ? "bg-white text-black" : "bg-neutral-900 text-neutral-400"}`}
+                      className={`whitespace-nowrap text-[8px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-md transition-colors ${activeZone === zone.id ? "bg-white text-black" : "bg-neutral-900 text-neutral-400"}`}
                     >
                       {zone.label}
                     </button>
                   ))}
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-6 w-full justify-between items-center">
+                <div className="flex flex-col md:flex-row gap-2 md:gap-6 w-full justify-between items-start md:items-center">
                   <div className="flex flex-col w-full overflow-hidden">
-                    <span className="hidden md:block text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500 mb-4">
-                      Material for:{" "}
-                      <span className="text-white">
-                        {zones.find((z) => z.id === activeZone)?.label}
+                    {/* HEADER & HEX PICKER (Jetzt in einer extrem flachen Reihe) */}
+                    <div className="flex justify-between items-center mb-2 md:mb-4 gap-2">
+                      <span className="hidden md:block text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500">
+                        Material for:{" "}
+                        <span className="text-white">
+                          {zones.find((z) => z.id === activeZone)?.label}
+                        </span>
                       </span>
-                    </span>
 
-                    {/* MATERIAL CARDS */}
-                    <div className="flex overflow-x-auto gap-4 pb-4 custom-scrollbar snap-x">
+                      <div className="flex items-center justify-between md:justify-start gap-2 bg-[#0a0a0a] p-1.5 md:p-2 rounded-lg border border-neutral-800 w-full md:w-auto shadow-inner">
+                        <span className="text-[8px] md:text-[9px] text-neutral-500 tracking-[0.2em] uppercase ml-1 md:ml-2">
+                          Paint
+                        </span>
+                        <div className="flex items-center">
+                          <div className="relative w-6 h-6 md:w-8 md:h-8 rounded-full border border-neutral-700 overflow-hidden shrink-0 shadow-inner">
+                            <input
+                              type="color"
+                              value={
+                                materials[activeZone as keyof typeof materials]
+                                  .hex
+                              }
+                              onChange={(e) =>
+                                setColor(activeZone, e.target.value)
+                              }
+                              className="absolute -top-4 -left-4 w-16 h-16 cursor-pointer"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={materials[
+                              activeZone as keyof typeof materials
+                            ].hex.toUpperCase()}
+                            onChange={(e) =>
+                              setColor(activeZone, e.target.value)
+                            }
+                            className="bg-transparent border-none py-1 font-['Space_Grotesk'] text-[10px] md:text-xs tracking-widest text-white focus:outline-none w-16 md:w-20 uppercase text-center mx-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* MATERIAL CARDS (Kompakter auf Mobile: w-16 h-24) */}
+                    <div className="flex overflow-x-auto gap-2 pb-2 custom-scrollbar snap-x">
                       {PREMIUM_MATERIALS.map((mat) => (
                         <button
                           key={mat.name}
                           onClick={() => setZoneMaterial(activeZone, mat)}
-                          className={`snap-center shrink-0 w-24 h-32 md:w-28 md:h-36 rounded-md flex flex-col items-center justify-center p-2 border-2 transition-all ${materials[activeZone as keyof typeof materials].name === mat.name ? "border-white bg-white/5" : "border-neutral-900 hover:border-neutral-700 bg-neutral-950"}`}
+                          className={`snap-center shrink-0 w-16 h-24 md:w-28 md:h-36 rounded-md flex flex-col items-center justify-center p-1 md:p-2 border-2 transition-all ${materials[activeZone as keyof typeof materials].name === mat.name ? "border-white bg-white/10" : "border-neutral-900 hover:border-neutral-700 bg-[#0a0a0a]"}`}
                         >
                           <div
-                            className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-neutral-700 mb-3 shadow-inner"
+                            className="w-6 h-6 md:w-14 md:h-14 rounded-full border border-neutral-700 mb-1.5 md:mb-2 shadow-inner"
                             style={{
                               backgroundColor: mat.hex,
                               backgroundImage: mat.textureUrl
@@ -262,11 +318,11 @@ export default function ConfiguratorPage() {
                               backgroundSize: "cover",
                             }}
                           />
-                          <span className="text-[9px] md:text-[10px] uppercase tracking-widest text-white text-center leading-tight">
+                          <span className="text-[7px] md:text-[10px] uppercase tracking-widest text-white text-center leading-tight">
                             {mat.name}
                           </span>
                           {mat.priceOffset > 0 && (
-                            <span className="text-[8px] text-neutral-400 mt-1">
+                            <span className="text-[6px] md:text-[8px] text-neutral-400 mt-0.5 md:mt-1">
                               +{mat.priceOffset}€
                             </span>
                           )}
@@ -277,25 +333,25 @@ export default function ConfiguratorPage() {
 
                   <button
                     onClick={handleCapture}
-                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-4 md:py-6 px-6 md:px-10 hover:bg-neutral-300 transition-colors w-full md:w-auto mt-2 md:mt-0"
+                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-3 md:py-6 px-6 md:px-10 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
                   >
                     FINALIZE
                   </button>
                 </div>
               </div>
             ) : (
-              // CUSTOM TEXT MODE
-              <div className="flex flex-col w-full gap-4">
-                <div className="flex flex-col md:flex-row items-center gap-4 w-full justify-between pb-2">
-                  <div className="flex items-center gap-4 w-full max-w-md">
+              // CUSTOM TEXT MODE (Kompakter)
+              <div className="flex flex-col w-full gap-2 md:gap-4">
+                <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 w-full justify-between pb-2">
+                  <div className="flex items-center gap-2 md:gap-4 w-full max-w-md">
                     <input
                       type="text"
                       value={customText}
                       onChange={(e) => setCustomText(e.target.value)}
                       placeholder="ENTER TEXT"
-                      className="bg-transparent border-b border-neutral-800 py-2 font-['Anton'] text-xl md:text-2xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
+                      className="bg-transparent border-b border-neutral-800 py-1 md:py-2 font-['Anton'] text-lg md:text-2xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
                     />
-                    <div className="relative w-10 h-10 border border-neutral-700 overflow-hidden shrink-0">
+                    <div className="relative w-8 h-8 md:w-10 md:h-10 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
                       <input
                         type="color"
                         value={textColor}
@@ -306,15 +362,14 @@ export default function ConfiguratorPage() {
                   </div>
                   <button
                     onClick={handleCapture}
-                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-3 md:py-4 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto"
+                    className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-2 md:py-4 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
                   >
                     FINALIZE
                   </button>
                 </div>
 
-                {/* CALIBRATION SLIDERS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full text-[9px] tracking-widest text-neutral-400 pt-4 border-t border-neutral-900">
-                  <div className="flex flex-col gap-1">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full text-[8px] md:text-[9px] tracking-widest text-neutral-400 pt-2 md:pt-4 border-t border-neutral-900">
+                  <div className="flex flex-col gap-0.5">
                     <span className="font-bold text-white">POS (X,Y,Z)</span>
                     <input
                       type="range"
@@ -347,7 +402,7 @@ export default function ConfiguratorPage() {
                       }
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-0.5">
                     <span className="font-bold text-white">ROT (X,Y,Z)</span>
                     <input
                       type="range"
@@ -380,7 +435,7 @@ export default function ConfiguratorPage() {
                       }
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-0.5">
                     <span className="font-bold text-white">SCALE (X,Y,Z)</span>
                     <input
                       type="range"
@@ -432,14 +487,14 @@ export default function ConfiguratorPage() {
         </div>
       </div>
 
-      {/* CHECKOUT OVERLAY BLEIBT IDENTISCH */}
+      {/* CHECKOUT OVERLAY (RESPONSIVE MASTER) */}
       {isCheckoutOpen && snapshotImage && (
-        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
-          <div className="bg-[#0a0a0a] border border-neutral-800 w-full max-w-6xl flex flex-col md:flex-row h-full max-h-[90vh] md:max-h-[80vh] overflow-hidden">
-            <div className="w-full md:w-1/2 bg-[#020202] relative p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-neutral-800">
+        <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex items-end md:items-center justify-center p-0 md:p-6 animate-in fade-in duration-300">
+          <div className="bg-[#0a0a0a] border-t md:border border-neutral-800 w-full max-w-6xl flex flex-col md:flex-row h-[92dvh] md:h-full md:max-h-[80vh] overflow-hidden rounded-t-2xl md:rounded-xl shadow-[0_-20px_60px_rgba(0,0,0,0.8)] md:shadow-2xl">
+            <div className="w-full md:w-1/2 bg-[#020202] relative p-4 md:p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-neutral-800 h-[35%] md:h-auto shrink-0">
               <button
                 onClick={closeCheckout}
-                className="absolute top-4 left-4 text-[10px] font-bold tracking-[0.3em] text-neutral-500 hover:text-white uppercase z-10"
+                className="absolute top-4 left-4 md:top-6 md:left-6 text-[10px] font-bold tracking-[0.3em] text-neutral-500 hover:text-white uppercase z-10"
               >
                 ← Edit
               </button>
@@ -449,15 +504,17 @@ export default function ConfiguratorPage() {
                 className="w-full h-full object-contain drop-shadow-2xl relative z-0"
               />
             </div>
-            <div className="w-full md:w-1/2 p-6 md:p-12 overflow-y-auto custom-scrollbar flex flex-col justify-between">
-              <div>
-                <h2 className="font-['Anton'] text-3xl md:text-5xl text-white uppercase mb-2">
+
+            <div className="w-full md:w-1/2 flex flex-col h-[65%] md:h-auto bg-[#0a0a0a]">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12">
+                <h2 className="font-['Anton'] text-3xl md:text-5xl text-white uppercase mb-1 md:mb-2">
                   Prototype 001
                 </h2>
-                <div className="text-neutral-500 text-[10px] tracking-[0.3em] font-bold mb-8 md:mb-12">
+                <div className="text-neutral-500 text-[9px] md:text-[10px] tracking-[0.3em] font-bold mb-6 md:mb-10">
                   CUSTOM ARCHITECTURE // VERIFIED
                 </div>
-                <div className="space-y-4 border-b border-neutral-900 pb-8 mb-8">
+
+                <div className="space-y-3 md:space-y-4 pb-4">
                   {Object.entries(materials).map(([zone, mat]) => (
                     <div
                       key={zone}
@@ -466,10 +523,10 @@ export default function ConfiguratorPage() {
                       <span className="text-neutral-500">
                         {zones.find((z) => z.id === zone)?.label}
                       </span>
-                      <span className="text-white flex items-center gap-3">
-                        {mat.name}{" "}
+                      <span className="text-white flex items-center gap-2 md:gap-3">
+                        <span className="text-right">{mat.name}</span>
                         <div
-                          className="w-3 h-3 rounded-full border border-neutral-700"
+                          className="w-3 h-3 shrink-0 rounded-full border border-neutral-700"
                           style={{
                             backgroundColor: mat.hex,
                             backgroundImage: mat.textureUrl
@@ -481,18 +538,25 @@ export default function ConfiguratorPage() {
                       </span>
                     </div>
                   ))}
+                  {customText && (
+                    <div className="flex justify-between items-center text-[9px] md:text-[10px] tracking-widest uppercase pt-3 md:pt-4 border-t border-neutral-900">
+                      <span className="text-neutral-500">APPLIED TEXT</span>
+                      <span className="text-white">"{customText}"</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="mt-auto">
-                <div className="flex justify-between items-end mb-6">
+
+              <div className="shrink-0 p-6 md:p-12 border-t border-neutral-900 bg-[#080808]">
+                <div className="flex justify-between items-end mb-4 md:mb-6">
                   <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-neutral-500 uppercase">
                     Total
                   </span>
-                  <span className="font-['Anton'] text-3xl md:text-5xl text-white">
+                  <span className="font-['Anton'] text-3xl md:text-5xl text-white leading-none drop-shadow-md">
                     € {totalPrice.toFixed(2)}
                   </span>
                 </div>
-                <button className="w-full bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-4 md:py-6 hover:bg-neutral-300 transition-colors">
+                <button className="w-full bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-4 md:py-6 hover:bg-neutral-300 transition-colors rounded-sm shadow-xl">
                   Authorize Payment
                 </button>
               </div>
