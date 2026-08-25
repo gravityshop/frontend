@@ -86,7 +86,7 @@ export default function ConfiguratorPage() {
     return () => clearTimeout(timer);
   }, [activeZone, editMode]);
 
-  const yOffset = mounted && isMobile ? 1.4 : 0;
+  const yOffset = mounted && isMobile ? 12 : 0;
   const totalPrice =
     290 +
     Object.values(materials).reduce((acc, mat) => acc + mat.priceOffset, 0);
@@ -152,7 +152,7 @@ export default function ConfiguratorPage() {
       <div className="absolute inset-0 z-0 cursor-move bg-[radial-gradient(ellipse_at_center,#262626_0%,#050505_70%)]">
         <Canvas
           gl={{ preserveDrawingBuffer: true }}
-          camera={{ position: [3.5, 1, 4.5], fov: 45 }}
+          camera={{ position: [1, 0.5, 4.5], fov: 45 }}
         >
           <ambientLight intensity={0.5} />
           <spotLight
@@ -186,7 +186,7 @@ export default function ConfiguratorPage() {
             </group>
           </Suspense>
           <OrbitControls
-            target={[0, 0.8 + yOffset, 0]}
+            target={[0, 0.1 + yOffset, 0]}
             enablePan={false}
             minDistance={2}
             maxDistance={6}
