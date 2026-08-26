@@ -29,8 +29,8 @@ function CameraRig() {
     const m = isMobile ? 1.3 : 1;
     const positions = {
       PROFILE: { x: 3.5 * m, y: 1.0, z: 4.5 * m },
-      FRONT: { x: 0, y: 1.0, z: 6 * m },
-      HEEL: { x: 0, y: 1.5, z: -6 * m },
+      LEFT_SIDE: { x: 0, y: 1.0, z: 6 * m },
+      RIGHT_SIDE: { x: 0, y: 1.5, z: -6 * m },
       TOP: { x: 0, y: 6 * m, z: 0.1 },
     };
 
@@ -245,18 +245,18 @@ export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
         />
 
         <MeshZone
-          meshId="zohle_0"
-          name="zohle"
+          meshId="sohle_0"
+          name="sohle"
           geometry={nodes.tmpf02s7d6_ply001.geometry}
         />
         <MeshZone
-          meshId="zohle_1"
-          name="zohle"
+          meshId="sohle_1"
+          name="sohle"
           geometry={nodes.tmpf02s7d6_ply001_1.geometry}
         />
         <MeshZone
-          meshId="zohle_2"
-          name="zohle"
+          meshId="sohle_2"
+          name="sohle"
           geometry={nodes.tmpf02s7d6_ply001_2.geometry}
         />
       </group>

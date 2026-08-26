@@ -1,3 +1,4 @@
+// store/useConfiguratorStore.ts
 import { create } from 'zustand';
 
 export interface MaterialConfig {
@@ -39,9 +40,8 @@ interface ConfiguratorState {
     materials: Record<string, MaterialConfig>;
     activeZone: string;
 
-    // UX UPDATE: Layer-System für Texte
     decals: DecalObj[];
-    selectedDecalId: string | null; // Welcher Text wird gerade bearbeitet?
+    selectedDecalId: string | null;
 
     cameraView: "PROFILE" | "FRONT" | "HEEL" | "TOP";
     isCheckoutOpen: boolean;
@@ -51,7 +51,6 @@ interface ConfiguratorState {
     setColor: (zone: string, color: string) => void;
     setActiveZone: (zone: string) => void;
 
-    // Neue Text-Funktionen
     addDecal: (decal: DecalObj) => void;
     updateDecal: (id: string, updates: Partial<DecalObj>) => void;
     removeDecal: (id: string) => void;
@@ -60,6 +59,9 @@ interface ConfiguratorState {
     setCameraView: (view: "PROFILE" | "FRONT" | "HEEL" | "TOP") => void;
     openCheckout: (image: string) => void;
     closeCheckout: () => void;
+
+    // NEU: Diese Funktion lädt eine gespeicherte JSON-Konfiguration in den Live-Store
+    loadConfiguration: (config: { materials: Record<string, MaterialConfig>; decals: DecalObj[] }) => void;
 }
 
 export const useConfiguratorStore = create<ConfiguratorState>((set) => ({
@@ -80,7 +82,7 @@ export const useConfiguratorStore = create<ConfiguratorState>((set) => ({
         unten: PREMIUM_MATERIALS[0],
         vorne: PREMIUM_MATERIALS[0],
         "vorne-oben": PREMIUM_MATERIALS[0],
-        zohle: PREMIUM_MATERIALS[4],
+        sohle: PREMIUM_MATERIALS[4],
     },
     activeZone: "seiten",
 
@@ -100,7 +102,6 @@ export const useConfiguratorStore = create<ConfiguratorState>((set) => ({
     })),
     setActiveZone: (zone) => set({ activeZone: zone }),
 
-    // UX UPDATE: Layer Management
     addDecal: (decal) => set((state) => ({ decals: [...state.decals, decal], selectedDecalId: decal.id })),
     updateDecal: (id, updates) => set((state) => ({
         decals: state.decals.map(d => d.id === id ? { ...d, ...updates } : d)
@@ -114,4 +115,10 @@ export const useConfiguratorStore = create<ConfiguratorState>((set) => ({
     setCameraView: (view) => set({ cameraView: view }),
     openCheckout: (image) => set({ isCheckoutOpen: true, snapshotImage: image }),
     closeCheckout: () => set({ isCheckoutOpen: false, snapshotImage: null }),
+
+    // NEU: Überschreibt das aktuelle Material und die Texte mit den Daten aus der Collection
+    loadConfiguration: (config) => set((state) => ({
+        materials: { ...state.materials, ...config.materials },
+        decals: config.decals || []
+    })),
 }));
