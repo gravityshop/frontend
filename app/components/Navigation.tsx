@@ -121,7 +121,7 @@ export default function Navigation() {
             </a>
           ))}
         </nav>
-        <div className="hidden md:flex items-center gap-6 pointer-events-auto font-['Space_Grotesk'] text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase">
+        <div className="hidden md:flex items-center gap-6 pointer-events-auto font-['Space_Grotesk'] text-[6px] md:text-xs font-bold tracking-[0.2em] uppercase">
           <Link
             href="/login"
             className="hover:text-neutral-500 transition-colors"
@@ -161,7 +161,7 @@ export default function Navigation() {
                 onClick={
                   link.isScroll ? scrollToEditions : () => setIsMenuOpen(false)
                 }
-                className="menu-link-item block font-['Anton'] text-5xl uppercase tracking-wider text-white hover:text-neutral-500 transition-colors"
+                className="menu-link-item block font-['Anton'] text-4xl uppercase tracking-wider text-white hover:text-neutral-500 transition-colors"
               >
                 {link.label}
               </a>
