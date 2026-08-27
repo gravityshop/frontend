@@ -42,9 +42,8 @@ export default function ConfiguratorPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // FIX: Schuh schwebt auf dem Desktop jetzt minimal höher (0.3 statt 0),
-  // damit der untere Editor ihn nicht verdeckt.
-  const yOffset = mounted && isMobile ? 1.4 : 0.3;
+  // FIX: Schuh schwebt auf dem Desktop jetzt deutlich höher (0.7), um Platz für den Editor zu machen
+  const yOffset = mounted && isMobile ? 1.4 : 0.7;
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -66,7 +65,6 @@ export default function ConfiguratorPage() {
 
   return (
     <div className="w-full h-dvh bg-[#050505] overflow-hidden selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
-      {/* 3D SZENE MIT BILD-HINTERGRUND */}
       <div className="absolute inset-0 z-0 cursor-move bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
 
@@ -129,7 +127,6 @@ export default function ConfiguratorPage() {
         </Canvas>
       </div>
 
-      {/* UI OVERLAY */}
       <div
         ref={uiRef}
         className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between"
@@ -137,7 +134,6 @@ export default function ConfiguratorPage() {
         <TopHeader />
         <DesktopSidebar />
 
-        {/* BOTTOM HUD - FIX: max-w-5xl, z-30 für Überlappungs-Schutz und reduziertes Padding */}
         <div className="mt-auto conf-ui pointer-events-auto w-full max-w-5xl xl:max-w-6xl mx-auto flex flex-col px-4 pb-4 md:px-8 md:pb-6 relative z-30">
           <div className="flex gap-4 md:gap-6 mb-2 md:mb-3 text-[9px] xl:text-[10px] font-bold tracking-[0.2em] justify-center md:justify-start drop-shadow-md">
             <button

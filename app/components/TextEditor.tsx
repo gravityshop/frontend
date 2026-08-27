@@ -1,17 +1,19 @@
-// components/TextEditor.tsx
 "use client";
 
+import React from "react";
+import { useRouter } from "next/navigation";
 import { useConfiguratorStore } from "@/store/useConfiguratorStore";
-import { triggerCapture } from "@/lib/utils";
+import { BASE_PRICE } from "@/lib/constants";
 
 export function TextEditor() {
+  const router = useRouter();
   const {
     decals,
+    materials,
     selectedDecalId,
     setSelectedDecalId,
     updateDecal,
     removeDecal,
-    openCheckout,
   } = useConfiguratorStore();
   const activeDecal = decals.find((d) => d.id === selectedDecalId);
 
@@ -26,8 +28,29 @@ export function TextEditor() {
     updateDecal(activeDecal.id, { [type]: newArr });
   };
 
+  const handleFinalize = () => {
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      const imgData = canvas.toDataURL("image/jpeg", 0.9);
+      const customPrice =
+        BASE_PRICE +
+        Object.values(materials).reduce((acc, mat) => acc + mat.priceOffset, 0);
+      localStorage.setItem(
+        "gravity_cart",
+        JSON.stringify({
+          mode: "CUSTOM",
+          size: "42",
+          customSnapshot: imgData,
+          customPrice: customPrice,
+          shoe: { config: { materials, decals } },
+        }),
+      );
+      router.push("/checkout");
+    }
+  };
+
   return (
-    <div className="flex flex-col w-full gap-2 md:gap-4">
+    <div className="flex flex-col w-full gap-2 md:gap-3">
       <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2">
         {decals.map((decal) => (
           <div
@@ -66,9 +89,9 @@ export function TextEditor() {
                   })
                 }
                 placeholder="ENTER TEXT"
-                className="bg-transparent border-b border-neutral-800 py-1 md:py-2 font-['Anton'] text-lg md:text-2xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
+                className="bg-transparent border-b border-neutral-800 py-1 font-['Anton'] text-lg md:text-xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
               />
-              <div className="relative w-8 h-8 md:w-10 md:h-10 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
+              <div className="relative w-8 h-8 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
                 <input
                   type="color"
                   value={activeDecal.color}
@@ -80,14 +103,14 @@ export function TextEditor() {
               </div>
             </div>
             <button
-              onClick={() => triggerCapture(openCheckout)}
-              className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-2 md:py-4 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
+              onClick={handleFinalize}
+              className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-2 md:py-3 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
             >
               FINALIZE
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full text-[8px] md:text-[9px] tracking-widest text-neutral-400 pt-2 md:pt-4 border-t border-neutral-900">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full text-[8px] tracking-widest text-neutral-400 pt-2 border-t border-neutral-900">
             <div className="flex flex-col gap-0.5">
               <span className="font-bold text-white">POS (X,Y,Z)</span>
               <input
@@ -190,7 +213,7 @@ export function TextEditor() {
           </div>
         </>
       ) : (
-        <div className="w-full text-center py-6">
+        <div className="w-full text-center py-4">
           <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-neutral-600">
             NO TEXT SELECTED
           </span>

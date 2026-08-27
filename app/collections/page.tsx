@@ -159,7 +159,7 @@ export default function CollectionsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-[100dvh] bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600 relative overflow-x-hidden"
+      className="min-h-dvh bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600 relative overflow-x-hidden"
     >
       <header className="flex justify-between items-center p-6 md:p-12 border-b border-white/10 sticky top-0 bg-[#050505]/90 backdrop-blur-md z-40">
         <Link
@@ -191,7 +191,7 @@ export default function CollectionsPage() {
             className="collection-item group cursor-pointer flex flex-col"
             onClick={() => openProduct(shoe)}
           >
-            <div className="w-full aspect-[4/3] bg-neutral-900 overflow-hidden relative rounded-sm shadow-2xl">
+            <div className="w-full aspect-4/3 bg-neutral-900 overflow-hidden relative rounded-sm shadow-2xl">
               <img
                 src={shoe.imageUrl}
                 alt={shoe.name}
@@ -231,13 +231,13 @@ export default function CollectionsPage() {
           ></div>
 
           {/* Panel zieht sich auf Desktop jetzt über die volle Höhe und rechte Seite */}
-          <div className="overlay-panel bg-[#0a0a0a] w-full md:w-[100vw] h-[100dvh] flex flex-col md:flex-row relative z-10">
+          <div className="overlay-panel bg-[#0a0a0a] w-full md:w-screen h-dvh flex flex-col md:flex-row relative z-10">
             <button
               onClick={closeProduct}
               className="absolute top-4 left-4 md:top-8 md:left-8 z-50 text-[10px] font-bold tracking-[0.3em] text-neutral-500 hover:text-white uppercase bg-black/60 px-4 py-2 rounded-full backdrop-blur-md transition-colors hover:bg-black/80 group"
             >
               <span className="md:hidden">✕</span>
-              <span className="hidden md:inline group-hover:-translate-x-1 transition-transform inline-block">
+              <span className="hidden md:inline group-hover:-translate-x-1 transition-transform">
                 ← CLOSE
               </span>
             </button>

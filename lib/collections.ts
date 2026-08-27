@@ -18,7 +18,7 @@ const defMat = { name: "PITCH BLACK (MATTE)", hex: "#111111", roughness: 0.9, me
 const defaultMaterials = {
     "schnuehsenkel": defMat,
     "schuhzuenge": defMat,
-    "zohle": { name: "BONE WHITE", hex: "#f5f5f5", roughness: 0.8, metalness: 0.05, priceOffset: 0 },
+    "sohle": { name: "BONE WHITE", hex: "#f5f5f5", roughness: 0.8, metalness: 0.05, priceOffset: 0 },
     "unten": defMat,
     "vorne": defMat,
     "vorne-oben": defMat,
@@ -53,7 +53,7 @@ export const COLLECTION_DATA: CollectionShoe[] = [
                 "unten": { "name": "CROCODILE LEATHER", "hex": "#ffffff", "roughness": 0.4, "metalness": 0.1, "priceOffset": 150, "textureUrl": "/textures/krokodil.avif" },
                 "vorne": { "name": "BLOOD RED", "hex": "#7f1d1d", "roughness": 0.6, "metalness": 0.3, "priceOffset": 20 },
                 "vorne-oben": { "name": "CROCODILE LEATHER", "hex": "#ffffff", "roughness": 0.4, "metalness": 0.1, "priceOffset": 150, "textureUrl": "/textures/krokodil.avif" },
-                "zohle": { "name": "CROCODILE LEATHER", "hex": "#ffffff", "roughness": 0.4, "metalness": 0.1, "priceOffset": 150, "textureUrl": "/textures/krokodil.avif" } // <-- BUGFIX: zohle statt sohle!
+                "sohle": { "name": "CROCODILE LEATHER", "hex": "#ffffff", "roughness": 0.4, "metalness": 0.1, "priceOffset": 150, "textureUrl": "/textures/krokodil.avif" } // <-- BUGFIX: zohle statt sohle!
             },
             "decals": []
         }

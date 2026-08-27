@@ -14,12 +14,10 @@ import { GLTF } from "three-stdlib";
 import gsap from "gsap";
 import { useConfiguratorStore } from "@/store/useConfiguratorStore";
 
-// KOMMENTAR: Definiert die Struktur der 3D-Datei für TypeScript
 type GLTFResult = GLTF & {
   nodes: { [key: string]: THREE.Mesh };
 };
 
-// KOMMENTAR: Kamera-Rig, das sanft animiert, wenn du auf "Profile", "Top", etc. klickst
 function CameraRig() {
   const { camera } = useThree();
   const { cameraView } = useConfiguratorStore();
@@ -27,10 +25,11 @@ function CameraRig() {
 
   useEffect(() => {
     const m = isMobile ? 1.3 : 1;
+    // BUGFIX: Die Keys heißen jetzt exakt so, wie sie TypeScript im Store erwartet ("FRONT" und "HEEL")
     const positions = {
       PROFILE: { x: 3.5 * m, y: 1.0, z: 4.5 * m },
-      LEFT_SIDE: { x: 0, y: 1.0, z: 6 * m },
-      RIGHT_SIDE: { x: 0, y: 1.5, z: -6 * m },
+      FRONT: { x: 0, y: 1.0, z: 6 * m },
+      HEEL: { x: 0, y: 1.5, z: -6 * m },
       TOP: { x: 0, y: 6 * m, z: 0.1 },
     };
 
@@ -46,7 +45,6 @@ function CameraRig() {
   return null;
 }
 
-// KOMMENTAR: Diese interne Komponente baut jedes Einzelteil des Schuhs
 const MeshZone = ({
   meshId,
   name,
@@ -64,10 +62,8 @@ const MeshZone = ({
 
   const decals = allDecals.filter((d) => d.meshId === meshId);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
-
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
 
-  // KOMMENTAR: Texturen (wie Zebra) sicher laden
   useEffect(() => {
     if (matConfig?.textureUrl) {
       new THREE.TextureLoader().load(
@@ -86,7 +82,6 @@ const MeshZone = ({
     }
   }, [matConfig?.textureUrl]);
 
-  // KOMMENTAR: Zwingt die Grafikkarte, neue Bilder direkt anzuzeigen
   useEffect(() => {
     if (matRef.current) {
       matRef.current.needsUpdate = true;
@@ -100,9 +95,7 @@ const MeshZone = ({
       geometry={geometry}
       onClick={(e) => {
         e.stopPropagation();
-        if (editMode === "MATERIALS") {
-          setActiveZone(name);
-        }
+        if (editMode === "MATERIALS") setActiveZone(name);
       }}
       onDoubleClick={(e) => {
         e.stopPropagation();
@@ -111,7 +104,6 @@ const MeshZone = ({
           const localPos = e.object.worldToLocal(e.point.clone());
           const localNormal =
             e.face?.normal?.clone() || new THREE.Vector3(0, 0, 1);
-
           const dummy = new THREE.Object3D();
           dummy.position.copy(localPos);
           dummy.lookAt(localPos.clone().add(localNormal));
@@ -143,7 +135,6 @@ const MeshZone = ({
         metalness={matConfig.metalness}
         map={texture || null}
       />
-
       {decals.map((decal) => (
         <Decal
           key={decal.id}
@@ -183,18 +174,13 @@ const MeshZone = ({
 
 export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
   const { nodes } = useGLTF(
-    "/3d_model/sheos_material_new.glb",
+    "/3d_model/shoes_material_new.glb",
   ) as unknown as GLTFResult;
 
   return (
     <group {...props} dispose={null}>
       <CameraRig />
       <group position={[0, 0, 0]}>
-        {/* ========================================================
-            DER FIX: Die Zeile mit "MeshZone meshId=All" 
-            wurde hier KOMPLETT gelöscht. Der zweite Schuh ist weg!
-            ======================================================== */}
-
         <MeshZone
           meshId="hinter"
           name="hinter"
@@ -243,7 +229,6 @@ export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
           name="vorne-oben"
           geometry={nodes["vorne-oben"].geometry}
         />
-
         <MeshZone
           meshId="sohle_0"
           name="sohle"
@@ -264,4 +249,4 @@ export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
   );
 }
 
-useGLTF.preload("/3d_model/sheos_material_new.glb");
+useGLTF.preload("/3d_model/shoes_material.glb");

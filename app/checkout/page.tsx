@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 // Definieren des Typs für den LocalStorage-Warenkorb
@@ -38,7 +37,7 @@ export default function CheckoutPage() {
     : cartItem.customSnapshot;
 
   return (
-    <div className="min-h-[100dvh] bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600">
+    <div className="min-h-dvh bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600">
       <header className="flex justify-center items-center p-6 md:p-8 border-b border-white/10 bg-[#0a0a0a]">
         <div className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase">
           GRAVITY // SECURE CHECKOUT
