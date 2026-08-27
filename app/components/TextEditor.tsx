@@ -50,8 +50,9 @@ export function TextEditor() {
   };
 
   return (
-    <div className="flex flex-col w-full gap-2 md:gap-3">
-      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2">
+    <div className="flex flex-col w-full gap-2">
+      {/* DECALS LIST */}
+      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
         {decals.map((decal) => (
           <div
             key={decal.id}
@@ -59,7 +60,7 @@ export function TextEditor() {
           >
             <button
               onClick={() => setSelectedDecalId(decal.id)}
-              className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-10 text-left"
+              className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-[40px] text-left"
             >
               {decal.text || "EMPTY"}
             </button>
@@ -78,7 +79,8 @@ export function TextEditor() {
 
       {activeDecal ? (
         <>
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 w-full justify-between pb-2">
+          {/* CONTROLS HEADER */}
+          <div className="flex flex-row items-center gap-2 md:gap-4 w-full justify-between pb-1 border-b border-white/5 mb-1">
             <div className="flex items-center gap-2 md:gap-4 w-full max-w-md">
               <input
                 type="text"
@@ -89,9 +91,9 @@ export function TextEditor() {
                   })
                 }
                 placeholder="ENTER TEXT"
-                className="bg-transparent border-b border-neutral-800 py-1 font-['Anton'] text-lg md:text-xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
+                className="bg-transparent border-b border-neutral-800 py-1 font-['Anton'] text-sm md:text-xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
               />
-              <div className="relative w-8 h-8 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
+              <div className="relative w-6 h-6 md:w-8 md:h-8 border border-neutral-700 overflow-hidden shrink-0 rounded-sm">
                 <input
                   type="color"
                   value={activeDecal.color}
@@ -102,17 +104,20 @@ export function TextEditor() {
                 />
               </div>
             </div>
+
+            {/* FIX: Button auf Mobile flacher (h-[36px]) */}
             <button
               onClick={handleFinalize}
-              className="bg-white shrink-0 text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase py-2 md:py-3 px-6 md:px-8 hover:bg-neutral-300 transition-colors w-full md:w-auto rounded-sm"
+              className="bg-white shrink-0 text-black text-[9px] md:text-xs font-bold tracking-[0.3em] uppercase h-[36px] md:h-[48px] px-4 md:px-8 hover:bg-neutral-300 transition-colors rounded-sm"
             >
               FINALIZE
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full text-[8px] tracking-widest text-neutral-400 pt-2 border-t border-neutral-900">
+          {/* SLIDERS - Komprimiert */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-4 w-full text-[8px] tracking-widest text-neutral-400">
             <div className="flex flex-col gap-0.5">
-              <span className="font-bold text-white">POS (X,Y,Z)</span>
+              <span className="font-bold text-white mb-0.5">POS (X,Y,Z)</span>
               <input
                 type="range"
                 min="-3"
@@ -122,6 +127,7 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(0, parseFloat(e.target.value), "pos")
                 }
+                className="h-1"
               />
               <input
                 type="range"
@@ -132,6 +138,7 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(1, parseFloat(e.target.value), "pos")
                 }
+                className="h-1"
               />
               <input
                 type="range"
@@ -142,10 +149,11 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(2, parseFloat(e.target.value), "pos")
                 }
+                className="h-1"
               />
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="font-bold text-white">ROT (X,Y,Z)</span>
+              <span className="font-bold text-white mb-0.5">ROT (X,Y,Z)</span>
               <input
                 type="range"
                 min="-3.14"
@@ -155,6 +163,7 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(0, parseFloat(e.target.value), "rot")
                 }
+                className="h-1"
               />
               <input
                 type="range"
@@ -165,6 +174,7 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(1, parseFloat(e.target.value), "rot")
                 }
+                className="h-1"
               />
               <input
                 type="range"
@@ -175,10 +185,11 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(2, parseFloat(e.target.value), "rot")
                 }
+                className="h-1"
               />
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="font-bold text-white">SCALE (X,Y,Z)</span>
+              <span className="font-bold text-white mb-0.5">SCALE (X,Y,Z)</span>
               <input
                 type="range"
                 min="0"
@@ -188,6 +199,7 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(0, parseFloat(e.target.value), "scale")
                 }
+                className="h-1"
               />
               <input
                 type="range"
@@ -198,6 +210,7 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(1, parseFloat(e.target.value), "scale")
                 }
+                className="h-1"
               />
               <input
                 type="range"
@@ -208,13 +221,14 @@ export function TextEditor() {
                 onChange={(e) =>
                   handleSlider(2, parseFloat(e.target.value), "scale")
                 }
+                className="h-1"
               />
             </div>
           </div>
         </>
       ) : (
-        <div className="w-full text-center py-4">
-          <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-neutral-600">
+        <div className="w-full text-center py-2 md:py-4">
+          <span className="text-[9px] md:text-xs font-bold tracking-[0.3em] text-neutral-600">
             NO TEXT SELECTED
           </span>
         </div>
