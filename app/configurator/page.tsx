@@ -89,7 +89,7 @@ export default function ConfiguratorPage() {
           <Environment preset="city" environmentIntensity={1} />
           <Suspense fallback={<Loader3D />}>
             <group position={[0, yOffset, 0]}>
-              <Center position={[0, 1, 0]}>
+              <Center position={[0, 1.4, 0]}>
                 <Float
                   speed={1.5}
                   rotationIntensity={0.1}
