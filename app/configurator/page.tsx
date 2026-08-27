@@ -70,7 +70,7 @@ export default function ConfiguratorPage() {
 
         <Canvas
           gl={{ preserveDrawingBuffer: true, antialias: true }}
-          camera={{ position: [3.5, 1, 4.5], fov: 45 }}
+          camera={{ position: [5, 1, 4.5], fov: 45 }}
         >
           <ambientLight intensity={0.5} />
           <spotLight
@@ -91,7 +91,7 @@ export default function ConfiguratorPage() {
 
           <Suspense fallback={<Loader3D />}>
             <group position={[0, yOffset, 0]}>
-              <Center position={[0, 0.8, 0]}>
+              <Center position={[0, 1.8, 0]}>
                 <Float
                   speed={1.5}
                   rotationIntensity={0.1}
