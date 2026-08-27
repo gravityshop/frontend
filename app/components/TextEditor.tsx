@@ -60,7 +60,7 @@ export function TextEditor() {
           >
             <button
               onClick={() => setSelectedDecalId(decal.id)}
-              className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-[40px] text-left"
+              className="text-[9px] md:text-[10px] font-bold tracking-widest text-white uppercase min-w-10 text-left"
             >
               {decal.text || "EMPTY"}
             </button>
@@ -108,7 +108,7 @@ export function TextEditor() {
             {/* FIX: Button auf Mobile flacher (h-[36px]) */}
             <button
               onClick={handleFinalize}
-              className="bg-white shrink-0 text-black text-[9px] md:text-xs font-bold tracking-[0.3em] uppercase h-[36px] md:h-[48px] px-4 md:px-8 hover:bg-neutral-300 transition-colors rounded-sm"
+              className="bg-white shrink-0 text-black text-[9px] md:text-xs font-bold tracking-[0.3em] uppercase h-9 md:h-12 px-4 md:px-8 hover:bg-neutral-300 transition-colors rounded-sm"
             >
               FINALIZE
             </button>

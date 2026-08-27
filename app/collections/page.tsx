@@ -25,7 +25,7 @@ export default function CollectionsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-[100dvh] bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600 relative overflow-x-hidden"
+      className="min-h-dvh bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600 relative overflow-x-hidden"
     >
       <header className="flex justify-between items-center p-6 md:p-12 border-b border-white/10 sticky top-0 bg-[#050505]/90 backdrop-blur-md z-40">
         <Link

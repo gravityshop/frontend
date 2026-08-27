@@ -118,7 +118,7 @@ export function MaterialEditor() {
 
       <div className="flex flex-col xl:flex-row gap-4 xl:gap-8 w-full items-center justify-between border-t border-white/5 pt-3 md:pt-4 mt-1 md:mt-2">
         {/* SWATCHES: Container Padding reduziert, Lücken verkleinert */}
-        <div className="flex overflow-x-auto gap-3 md:gap-10 w-full snap-x items-start pt-2 pb-2 md:pt-4 md:pb-6 px-1 md:px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex overflow-x-auto gap-3 md:gap-10 w-full snap-x items-start pt-2 pb-2 md:pt-4 md:pb-6 px-1 md:px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
           {PREMIUM_MATERIALS.map((mat) => {
             const isSelected = activeMat?.name === mat.name;
             return (
@@ -129,7 +129,7 @@ export function MaterialEditor() {
                 className="group snap-center shrink-0 flex flex-col items-center justify-start w-12 md:w-20 outline-none"
               >
                 <div
-                  className={`relative p-[2px] md:p-[3px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${isSelected ? "scale-110" : "scale-100 group-hover:scale-105"}`}
+                  className={`relative p-0.5 md:p-0.75 rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${isSelected ? "scale-110" : "scale-100 group-hover:scale-105"}`}
                 >
                   <div
                     className={`absolute inset-0 rounded-full border transition-colors duration-700 ${isSelected ? "border-white" : "border-white/5 group-hover:border-white/30"}`}
@@ -148,7 +148,7 @@ export function MaterialEditor() {
                         "inset -4px -4px 10px rgba(0,0,0,0.6), inset 2px 2px 5px rgba(255,255,255,0.2)",
                     }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/60 mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-black/60 mix-blend-overlay" />
                   </div>
                 </div>
 
@@ -175,7 +175,7 @@ export function MaterialEditor() {
         {/* FIX: Button auf Mobile flacher (h-[48px] statt h-[72px]) */}
         <button
           onClick={handleFinalize}
-          className="group relative overflow-hidden shrink-0 w-full xl:w-56 h-[48px] md:h-[72px] bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-white/20 hover:border-white mt-1 md:mt-0"
+          className="group relative overflow-hidden shrink-0 w-full xl:w-56 h-12 md:h-18 bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-white/20 hover:border-white mt-1 md:mt-0"
         >
           <span className="absolute inset-0 bg-neutral-300 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
           <span className="relative z-10 flex items-center justify-center gap-3 w-full h-full">

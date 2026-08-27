@@ -123,13 +123,13 @@ export function ProductOverlay({
         className="overlay-bg absolute inset-0 bg-black/90 backdrop-blur-md"
         onClick={handleClose}
       ></div>
-      <div className="overlay-panel bg-[#0a0a0a] w-full md:w-[90vw] lg:w-[100vw] h-[100dvh] flex flex-col md:flex-row relative z-10">
+      <div className="overlay-panel bg-[#0a0a0a] w-full md:w-[90vw] lg:w-screen h-dvh flex flex-col md:flex-row relative z-10">
         <button
           onClick={handleClose}
           className="absolute top-4 left-4 md:top-8 md:left-8 z-50 text-[10px] font-bold tracking-[0.3em] text-neutral-500 hover:text-white uppercase bg-black/60 px-4 py-2 rounded-full backdrop-blur-md transition-colors hover:bg-black/80 group"
         >
           <span className="md:hidden">✕</span>
-          <span className="hidden md:inline group-hover:-translate-x-1 transition-transform inline-block">
+          <span className="md:inline group-hover:-translate-x-1 transition-transform inline-block">
             ← CLOSE
           </span>
         </button>
