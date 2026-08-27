@@ -28,15 +28,10 @@ import { TextEditor } from "../components/TextEditor";
 
 export default function ConfiguratorPage() {
   const uiRef = useRef<HTMLDivElement>(null);
-
-  // Refs für GSAP Kamera & Modell Animation
-  const groupRef = useRef<any>(null);
-  const controlsRef = useRef<any>(null);
-
   const { editMode, setEditMode } = useConfiguratorStore();
+
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -46,39 +41,10 @@ export default function ConfiguratorPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ==========================================
-  // DYNAMISCHE KAMERA-POSITIONIERUNG (GSAP)
-  // ==========================================
-  useEffect(() => {
-    if (!mounted) return;
+  const yOffset = mounted && isMobile ? 0.2 : 0.3;
 
-    // Wenn Mobile UND TextEditor aktiv -> Schuh gleitet nach oben (1.3)
-    // Wenn Mobile UND MaterialEditor aktiv -> Schuh bleibt unten (0.8)
-    // Desktop bleibt stabil (0.3)
-    const targetY = isMobile ? (editMode === "TEXT" ? 1.3 : 0.8) : 0.3;
-
-    if (groupRef.current) {
-      gsap.to(groupRef.current.position, {
-        y: targetY,
-        duration: 1,
-        ease: "power3.inOut",
-      });
-    }
-    if (controlsRef.current) {
-      gsap.to(controlsRef.current.target, {
-        y: 0.8 + targetY,
-        duration: 1,
-        ease: "power3.inOut",
-      });
-    }
-  }, [editMode, isMobile, mounted]);
-
-  // ==========================================
-  // UI & UX HINT ANIMATIONEN
-  // ==========================================
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. UI fährt von unten ein
       gsap.fromTo(
         ".conf-ui",
         { opacity: 0, y: 20 },
@@ -91,55 +57,19 @@ export default function ConfiguratorPage() {
           delay: 0.2,
         },
       );
-
-      // 2. UX Hint "Tap to edit" erscheint sanft
-      gsap.fromTo(
-        ".tap-hint",
-        { opacity: 0, scale: 0.8, y: 20 },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "back.out(1.5)",
-          delay: 1.5,
-        },
-      );
-
-      // 3. UX Hint verschwindet automatisch nach 7 Sekunden
-      gsap.to(".tap-hint", {
-        opacity: 0,
-        y: -20,
-        scale: 0.9,
-        duration: 0.5,
-        ease: "power3.in",
-        delay: 7,
-      });
     }, uiRef);
     return () => ctx.revert();
   }, []);
 
-  // Lässt den Hint sofort verschwinden, wenn der User interagiert
-  const handleCanvasInteraction = () => {
-    if (!hasInteracted) {
-      setHasInteracted(true);
-      gsap.to(".tap-hint", {
-        opacity: 0,
-        y: -20,
-        scale: 0.9,
-        duration: 0.4,
-        ease: "power3.in",
-      });
-    }
-  };
-
   return (
-    // FIX: overscroll-none blockiert das grausame "Bouncen" auf iOS Safari
-    <div className="w-full h-[100dvh] bg-[#050505] overflow-hidden overscroll-none selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
-      {/* FIX: touch-none blockiert das Scrollen beim Drehen des 3D Modells */}
+    <div className="w-full h-dvh bg-[#050505] overflow-hidden overscroll-none selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
+      {/* 
+        SENIOR HACK: Wir vergrößern den Container auf 115vh und schieben ihn auf Mobile 
+        um -15vh nach oben! Dadurch rückt das optische Zentrum der Kamera nach oben, 
+        OHNE dass wir die 3D-Koordinaten verfälschen müssen. 
+      */}
       <div
-        className="absolute inset-0 z-0 cursor-move touch-none bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat"
-        onPointerDown={handleCanvasInteraction}
+        className={`absolute left-0 right-0 z-0 cursor-move touch-none bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${isMobile ? "top-[-15vh] h-[115dvh]" : "top-0 h-dvh"}`}
       >
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
 
@@ -163,10 +93,8 @@ export default function ConfiguratorPage() {
             color="#a3a3a3"
           />
           <Environment preset="city" environmentIntensity={1} />
-
           <Suspense fallback={<Loader3D />}>
-            {/* GSAP kontrolliert jetzt die Y-Position! */}
-            <group ref={groupRef} position={[0, 0.8, 0]}>
+            <group position={[0, yOffset, 0]}>
               <Center position={[0, 1.6, 0]}>
                 <Float
                   speed={1.5}
@@ -187,10 +115,8 @@ export default function ConfiguratorPage() {
               />
             </group>
           </Suspense>
-
           <OrbitControls
-            ref={controlsRef}
-            target={[0, 1.6, 0]} // Wird von GSAP sofort überschrieben
+            target={[0, 0.8 + yOffset, 0]}
             enablePan={false}
             minDistance={2}
             maxDistance={6}
@@ -209,33 +135,6 @@ export default function ConfiguratorPage() {
       >
         <TopHeader />
         <DesktopSidebar />
-
-        {/* ==========================================
-            UX HINT: TAP TO EDIT (Mobile Only)
-            ========================================== */}
-        <div className="tap-hint md:hidden absolute top-[30%] left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center gap-3 opacity-0">
-          <div className="w-12 h-12 bg-black/40 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="animate-bounce"
-            >
-              <path d="M10 15v-6.5a1.5 1.5 0 0 1 3 0v7.5" />
-              <path d="M13 13.5v-2a1.5 1.5 0 0 1 3 0v2.5" />
-              <path d="M16 12.5v-1.5a1.5 1.5 0 0 1 3 0v1.5" />
-              <path d="M19 13.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2c-2.5 0-5.3-2-6-4l-4.4-4.4a2 2 0 0 1 2.8-2.8l3.6 3.6v-12.2a1.5 1.5 0 1 1 3 0v10.5" />
-            </svg>
-          </div>
-          <span className="text-[9px] font-bold tracking-[0.2em] text-white uppercase bg-black/60 px-4 py-1.5 rounded-full backdrop-blur-md shadow-xl">
-            Tap shoe parts to edit
-          </span>
-        </div>
 
         <div className="mt-auto conf-ui pointer-events-auto w-full max-w-4xl mx-auto flex flex-col px-2 pb-2 md:px-8 md:pb-6 relative z-30">
           <div className="flex gap-4 md:gap-6 mb-1 md:mb-3 text-[9px] xl:text-[10px] font-bold tracking-[0.2em] justify-center md:justify-start drop-shadow-md">

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConfiguratorStore } from "@/store/useConfiguratorStore";
 import { BASE_PRICE } from "@/lib/constants";
@@ -16,6 +16,15 @@ export function TextEditor() {
     removeDecal,
   } = useConfiguratorStore();
   const activeDecal = decals.find((d) => d.id === selectedDecalId);
+
+  // UX Fix: Tabs, um die Slider-Höhe massiv zu reduzieren
+  const [activeTab, setActiveTab] = useState<"pos" | "rot" | "scale">("pos");
+
+  const ranges = {
+    pos: { min: -3, max: 3 },
+    rot: { min: -3.14, max: 3.14 },
+    scale: { min: 0, max: 2 },
+  };
 
   const handleSlider = (
     axis: 0 | 1 | 2,
@@ -51,43 +60,16 @@ export function TextEditor() {
 
   return (
     <div className="flex flex-col w-full gap-2">
-      {/* ==========================================
-          CUSTOM CSS FÜR HIGH-END RANGE SLIDERS
-          ========================================== */}
       <style>{`
-        .premium-slider {
-          -webkit-appearance: none;
-          width: 100%;
-          background: transparent;
-        }
-        .premium-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          height: 12px;
-          width: 12px;
-          border-radius: 50%;
-          background: #ffffff;
-          cursor: pointer;
-          margin-top: -5px;
-          box-shadow: 0 0 10px rgba(255,255,255,0.8);
-          transition: transform 0.1s;
-        }
-        .premium-slider::-webkit-slider-thumb:active {
-          transform: scale(1.3);
-        }
-        .premium-slider::-webkit-slider-runnable-track {
-          width: 100%;
-          height: 2px;
-          cursor: pointer;
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 2px;
-        }
-        .premium-slider:focus {
-          outline: none;
-        }
+        .premium-slider { -webkit-appearance: none; width: 100%; background: transparent; }
+        .premium-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ffffff; cursor: pointer; margin-top: -7px; box-shadow: 0 0 10px rgba(255,255,255,0.3); transition: transform 0.1s; }
+        .premium-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+        .premium-slider::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+        .premium-slider:focus { outline: none; }
       `}</style>
 
       {/* DECALS LIST */}
-      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 mb-1 border-b border-white/5 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 mb-2 border-b border-white/5 no-scrollbar">
         {decals.map((decal) => (
           <div
             key={decal.id}
@@ -108,14 +90,13 @@ export function TextEditor() {
           </div>
         ))}
         <div className="text-[8px] md:text-[9px] font-bold tracking-[0.3em] text-neutral-500 uppercase px-3 py-2 border border-dashed border-neutral-800 rounded-full shrink-0">
-          + DOUBLE CLICK SHOE TO ADD TEXT
+          + DOUBLE CLICK SHOE
         </div>
       </div>
 
       {activeDecal ? (
         <>
-          {/* CONTROLS HEADER */}
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full justify-between pb-4 border-b border-white/5 mb-2">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full justify-between pb-3 border-b border-white/5 mb-3">
             <div className="flex items-center gap-3 w-full max-w-md">
               <div className="flex flex-col w-full">
                 <span className="text-[8px] tracking-[0.2em] text-neutral-500 uppercase mb-1">
@@ -130,16 +111,16 @@ export function TextEditor() {
                     })
                   }
                   placeholder="ENTER TEXT"
-                  // FIX: text-[16px] (text-base) ist PFLICHT für Mobile, sonst zoomt iOS Safari grausam rein!
-                  className="bg-transparent border-b border-neutral-800 py-1 font-['Anton'] text-[16px] md:text-xl tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
+                  // FIX: Inline style `fontSize: '16px'` zwingt iOS Safari dazu, NICHT heranzuzoomen. Das ist der ultimative Hack!
+                  style={{ fontSize: "16px" }}
+                  className="bg-transparent border-b border-neutral-800 py-1 font-['Anton'] tracking-widest text-white focus:outline-none focus:border-white w-full uppercase"
                 />
               </div>
-
               <div className="flex flex-col items-center">
                 <span className="text-[8px] tracking-[0.2em] text-neutral-500 uppercase mb-1">
                   Color
                 </span>
-                <div className="relative w-8 h-8 rounded-full border border-neutral-700 overflow-hidden shrink-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+                <div className="relative w-8 h-8 rounded-full border border-neutral-700 overflow-hidden shrink-0 shadow-inner">
                   <input
                     type="color"
                     value={activeDecal.color}
@@ -152,10 +133,9 @@ export function TextEditor() {
               </div>
             </div>
 
-            {/* BUTTON - Identisch zum Material Editor (Liquid Effect) */}
             <button
               onClick={handleFinalize}
-              className="group relative overflow-hidden shrink-0 w-full md:w-48 h-10 md:h-12 bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/20 hover:border-white"
+              className="group relative overflow-hidden shrink-0 w-full md:w-48 h-10 md:h-12 bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:border-white"
             >
               <span className="absolute inset-0 bg-neutral-300 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
               <span className="relative z-10 flex items-center justify-center gap-3 w-full h-full">
@@ -167,91 +147,49 @@ export function TextEditor() {
             </button>
           </div>
 
-          {/* SLIDERS - Senior UI Equalizer Layout */}
-          <div className="grid grid-cols-3 gap-4 w-full pt-2">
-            {/* POSITION */}
-            <div className="flex flex-col gap-3">
-              <span className="font-bold text-white text-[9px] tracking-[0.2em] uppercase border-b border-white/10 pb-1">
-                Position
-              </span>
-              {(["X", "Y", "Z"] as const).map((axisLabel, i) => (
-                <div key={`pos-${i}`} className="flex items-center gap-2">
-                  <span className="text-[8px] font-bold text-neutral-500 w-2">
-                    {axisLabel}
-                  </span>
-                  <input
-                    type="range"
-                    min="-3"
-                    max="3"
-                    step="0.01"
-                    value={activeDecal.pos[i]}
-                    onChange={(e) =>
-                      handleSlider(
-                        i as 0 | 1 | 2,
-                        parseFloat(e.target.value),
-                        "pos",
-                      )
-                    }
-                    className="premium-slider"
-                  />
-                </div>
+          {/* SENIOR UX: Transform Tabs statt ewig langer Liste */}
+          <div className="flex flex-col w-full">
+            <div className="flex gap-6 mb-4">
+              {(["pos", "rot", "scale"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-all duration-300 ${activeTab === tab ? "text-white border-b border-white pb-1" : "text-neutral-600 hover:text-neutral-400"}`}
+                >
+                  {tab === "pos"
+                    ? "Position"
+                    : tab === "rot"
+                      ? "Rotation"
+                      : "Scale"}
+                </button>
               ))}
             </div>
 
-            {/* ROTATION */}
-            <div className="flex flex-col gap-3">
-              <span className="font-bold text-white text-[9px] tracking-[0.2em] uppercase border-b border-white/10 pb-1">
-                Rotation
-              </span>
-              {(["X", "Y", "Z"] as const).map((axisLabel, i) => (
-                <div key={`rot-${i}`} className="flex items-center gap-2">
-                  <span className="text-[8px] font-bold text-neutral-500 w-2">
-                    {axisLabel}
+            <div className="flex flex-col gap-4">
+              {(["X", "Y", "Z"] as const).map((axis, i) => (
+                <div key={axis} className="flex items-center gap-4">
+                  <span className="text-[10px] font-bold text-white w-4">
+                    {axis}
                   </span>
                   <input
                     type="range"
-                    min="-3.14"
-                    max="3.14"
+                    min={ranges[activeTab].min}
+                    max={ranges[activeTab].max}
                     step="0.01"
-                    value={activeDecal.rot[i]}
+                    value={activeDecal[activeTab][i]}
                     onChange={(e) =>
                       handleSlider(
                         i as 0 | 1 | 2,
                         parseFloat(e.target.value),
-                        "rot",
+                        activeTab,
                       )
                     }
-                    className="premium-slider"
+                    className="premium-slider flex-1"
                   />
-                </div>
-              ))}
-            </div>
-
-            {/* SCALE */}
-            <div className="flex flex-col gap-3">
-              <span className="font-bold text-white text-[9px] tracking-[0.2em] uppercase border-b border-white/10 pb-1">
-                Scale
-              </span>
-              {(["X", "Y", "Z"] as const).map((axisLabel, i) => (
-                <div key={`scale-${i}`} className="flex items-center gap-2">
-                  <span className="text-[8px] font-bold text-neutral-500 w-2">
-                    {axisLabel}
+                  {/* Zeigt den aktuellen Wert sauber formatiert rechts an */}
+                  <span className="text-[9px] font-mono text-neutral-500 w-8 text-right">
+                    {activeDecal[activeTab][i].toFixed(2)}
                   </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.01"
-                    value={activeDecal.scale[i]}
-                    onChange={(e) =>
-                      handleSlider(
-                        i as 0 | 1 | 2,
-                        parseFloat(e.target.value),
-                        "scale",
-                      )
-                    }
-                    className="premium-slider"
-                  />
                 </div>
               ))}
             </div>
