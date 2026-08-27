@@ -41,7 +41,7 @@ export default function ConfiguratorPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // FIX: Da das UI unten nun viel flacher ist, muss der Schuh nicht mehr so extrem weit nach oben.
+  // Dein angepasster Wert für die Höhe
   const yOffset = mounted && isMobile ? 0.8 : 0.3;
 
   useLayoutEffect(() => {
@@ -63,8 +63,10 @@ export default function ConfiguratorPage() {
   }, []);
 
   return (
-    <div className="w-full h-dvh bg-[#050505] overflow-hidden selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
-      <div className="absolute inset-0 z-0 cursor-move bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat">
+    // FIX: overscroll-none verhindert den iOS Safari "Gummiband"-Effekt (Bouncen der Seite)
+    <div className="w-full h-dvh bg-[#050505] overflow-hidden overscroll-none selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
+      {/* FIX: touch-none auf dem Canvas-Wrapper blockiert Scrollen beim Rotieren des 3D-Modells */}
+      <div className="absolute inset-0 z-0 cursor-move touch-none bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
 
         <Canvas
@@ -89,6 +91,7 @@ export default function ConfiguratorPage() {
           <Environment preset="city" environmentIntensity={1} />
           <Suspense fallback={<Loader3D />}>
             <group position={[0, yOffset, 0]}>
+              {/* Dein angepasster Wert 1.6 */}
               <Center position={[0, 1.6, 0]}>
                 <Float
                   speed={1.5}
@@ -130,9 +133,7 @@ export default function ConfiguratorPage() {
         <TopHeader />
         <DesktopSidebar />
 
-        {/* FIX: Paddings auf Mobile stark reduziert (px-2 pb-2 statt px-4 pb-4) */}
         <div className="mt-auto conf-ui pointer-events-auto w-full max-w-4xl mx-auto flex flex-col px-2 pb-2 md:px-8 md:pb-6 relative z-30">
-          {/* FIX: Margin-Bottom der Tabs reduziert */}
           <div className="flex gap-4 md:gap-6 mb-1 md:mb-3 text-[9px] xl:text-[10px] font-bold tracking-[0.2em] justify-center md:justify-start drop-shadow-md">
             <button
               onClick={() => setEditMode("MATERIALS")}
@@ -148,7 +149,6 @@ export default function ConfiguratorPage() {
             </button>
           </div>
 
-          {/* FIX: Inneres Padding der schwarzen Box für Mobile gestaucht (p-3 pt-4 statt p-4) */}
           <div className="bg-[#050505]/95 backdrop-blur-xl border border-neutral-900 rounded-xl p-3 pt-4 md:p-6 flex flex-col w-full shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
             {editMode === "MATERIALS" ? <MaterialEditor /> : <TextEditor />}
           </div>
