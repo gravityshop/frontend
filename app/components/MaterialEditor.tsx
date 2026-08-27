@@ -127,7 +127,7 @@ export function MaterialEditor() {
             FIX: `pt-4 pb-6` verhindert das Abschneiden der Ränder beim Hover/Scale.
             FIX: `[&::-webkit-scrollbar]:hidden` versteckt die hässliche Scrollbar.
         */}
-        <div className="flex overflow-x-auto gap-6 md:gap-10 w-full snap-x items-start pt-4 pb-6 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex overflow-x-auto gap-6 md:gap-10 w-full snap-x items-start pt-4 pb-6 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
           {PREMIUM_MATERIALS.map((mat) => {
             const isSelected = activeMat?.name === mat.name;
             return (
@@ -138,7 +138,7 @@ export function MaterialEditor() {
               >
                 {/* 1. DER FOKUS-RING */}
                 <div
-                  className={`relative p-[3px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${isSelected ? "scale-110" : "scale-100 group-hover:scale-105"}`}
+                  className={`relative p-0.75 rounded-full transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${isSelected ? "scale-110" : "scale-100 group-hover:scale-105"}`}
                 >
                   {/* Animierter Border */}
                   <div
@@ -189,7 +189,7 @@ export function MaterialEditor() {
             ========================================== */}
         <button
           onClick={handleFinalize}
-          className="group relative overflow-hidden shrink-0 w-full xl:w-56 h-[72px] bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-white/20 hover:border-white"
+          className="group relative overflow-hidden shrink-0 w-full xl:w-56 h-18 bg-white text-black text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase rounded-sm shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-white/20 hover:border-white"
         >
           {/* Liquid Fill Hover */}
           <span className="absolute inset-0 bg-neutral-200 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
