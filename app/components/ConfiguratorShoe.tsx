@@ -25,7 +25,6 @@ function CameraRig() {
 
   useEffect(() => {
     const m = isMobile ? 1.3 : 1;
-    // BUGFIX: Die Keys heißen jetzt exakt so, wie sie TypeScript im Store erwartet ("FRONT" und "HEEL")
     const positions = {
       PROFILE: { x: 3.5 * m, y: 1.0, z: 4.5 * m },
       FRONT: { x: 0, y: 1.0, z: 6 * m },
@@ -62,7 +61,9 @@ const MeshZone = ({
 
   const decals = allDecals.filter((d) => d.meshId === meshId);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
+  const [hovered, setHovered] = useState(false); // NEU: State für den Hover-Glow
 
   useEffect(() => {
     if (matConfig?.textureUrl) {
@@ -87,6 +88,42 @@ const MeshZone = ({
       matRef.current.needsUpdate = true;
     }
   }, [texture]);
+
+  // ==========================================
+  // SENIOR UX: INTERACTIVE HOVER GLOW
+  // ==========================================
+  useEffect(() => {
+    if (matRef.current) {
+      gsap.to(matRef.current, {
+        emissiveIntensity: hovered ? 0.2 : 0, // Leuchtet beim Hovern auf
+        duration: 0.3,
+      });
+    }
+  }, [hovered]);
+
+  // ==========================================
+  // SENIOR UX: WAKE-UP SCAN SHIMMER
+  // ==========================================
+  useEffect(() => {
+    if (matRef.current) {
+      // Setzt die Leuchtfarbe auf reines Weiß
+      matRef.current.emissive = new THREE.Color(0xffffff);
+
+      // Jedes Teil leuchtet auf und fadet sanft ab.
+      // Math.random() sorgt dafür, dass die Teile nicht exakt gleichzeitig,
+      // sondern in einer coolen, schimmernden Sequenz (Wave) aufleuchten.
+      gsap.fromTo(
+        matRef.current,
+        { emissiveIntensity: 0.6 },
+        {
+          emissiveIntensity: 0,
+          duration: 1.2,
+          ease: "power2.out",
+          delay: 0.2 + Math.random() * 0.4,
+        },
+      );
+    }
+  }, [editMode]); // Feuert beim ersten Laden UND beim Wechsel der Tabs!
 
   if (!matConfig) return null;
 
@@ -121,10 +158,13 @@ const MeshZone = ({
       }}
       onPointerOver={(e) => {
         e.stopPropagation();
+        setHovered(true); // Hover-Status aktivieren
         document.body.style.cursor =
           editMode === "TEXT" ? "crosshair" : "pointer";
       }}
-      onPointerOut={() => {
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        setHovered(false); // Hover-Status deaktivieren
         document.body.style.cursor = "auto";
       }}
     >
@@ -249,4 +289,5 @@ export function ConfiguratorShoe(props: JSX.IntrinsicElements["group"]) {
   );
 }
 
-useGLTF.preload("/3d_model/shoes_material.glb");
+// FIX: Pfad aktualisiert, damit exakt die Datei gepreloadet wird, die auch benutzt wird!
+useGLTF.preload("/3d_model/shoes_material_new.glb");
