@@ -91,14 +91,15 @@ const ShoeModel = ({
 };
 
 export default function ArchiveGrid() {
+  // FIX: Wir brauchen den Trigger-Wrapper, um den iOS Resize-Bug zu umgehen
+  const triggerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const proxyRef = useRef({ yRot: 0, progress: 0 });
 
   useLayoutEffect(() => {
-    if (!sectionRef.current) return;
+    if (!triggerRef.current || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      // 1. FIX: KEIN SCALE! Nur noch Opacity Fade. Das rettet die WebGL Performance.
       gsap.fromTo(
         ".shoe-reveal",
         { opacity: 0 },
@@ -107,7 +108,7 @@ export default function ArchiveGrid() {
           duration: 1,
           ease: "none",
           scrollTrigger: {
-            trigger: sectionRef.current,
+            trigger: triggerRef.current, // Löst am Wrapper aus
             start: "top 60%",
           },
         },
@@ -115,12 +116,12 @@ export default function ArchiveGrid() {
 
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionRef.current,
-          pin: true,
-          // 2. FIX: Scrub auf 0.1 reduziert (vorher 1). Verhindert, dass der Schuh dem Scrollen "hinterherlaggt".
+          trigger: triggerRef.current, // Der Wrapper bestimmt Start/Ende
+          pin: sectionRef.current, // Die innere Sektion wird eingefroren
           scrub: 0.1,
           start: "top top",
           end: "+=200%",
+          anticipatePin: 1, // FIX: Verhindert harte Einrast-Jumps
         },
       });
 
@@ -129,44 +130,46 @@ export default function ArchiveGrid() {
         progress: 1,
         ease: "none",
       });
-    }, sectionRef);
+    }, triggerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      // 3. FIX: Zurück zu h-dvh ohne extra Wrapper. Clean und stabil.
-      className="relative w-full h-dvh bg-[#050505] overflow-hidden border-y border-neutral-900 flex items-center justify-center"
-    >
-      <div className="absolute bottom-16 md:bottom-24 inset-x-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-        <div className="overflow-hidden mt-4 px-4 text-center">
-          <p className="shoe-reveal opacity-0 font-['Space_Grotesk'] text-neutral-400 text-xs md:text-sm font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">
-            Scroll to manipulate
-          </p>
+    // Der neutrale Wrapper, der den GSAP Pin-Spacer abfängt
+    <div ref={triggerRef} className="w-full">
+      <section
+        ref={sectionRef}
+        // FIX: h-[100vh] statt h-dvh! Höhe bleibt statisch, auch wenn die iOS URL-Bar verschwindet
+        className="relative w-full h-[100vh] bg-[#050505] overflow-hidden border-y border-neutral-900 flex items-center justify-center"
+      >
+        <div className="absolute bottom-16 md:bottom-24 inset-x-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+          <div className="overflow-hidden mt-4 px-4 text-center">
+            <p className="shoe-reveal opacity-0 font-['Space_Grotesk'] text-neutral-400 text-xs md:text-sm font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">
+              Scroll to manipulate
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="shoe-reveal absolute inset-0 z-0 opacity-0">
-        {/* 4. FIX: dpr={[1, 2]} begrenzt die Pixeldichte auf High-Res Displays -> enormer Performance-Boost */}
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 6], fov: 75 }}>
-          <ambientLight intensity={0.2} />
-          <Environment preset="city" environmentIntensity={0.5} />
-          <Suspense fallback={null}>
-            <ShoeModel proxyRef={proxyRef} />
-            <ContactShadows
-              position={[0, -1.05, 0]}
-              opacity={0.9}
-              scale={4.5}
-              blur={2.5}
-              far={4}
-              color="#000000"
-            />
-          </Suspense>
-        </Canvas>
-      </div>
-    </section>
+        <div className="shoe-reveal absolute inset-0 z-0 opacity-0">
+          <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 6], fov: 75 }}>
+            <ambientLight intensity={0.2} />
+            <Environment preset="city" environmentIntensity={0.5} />
+            <Suspense fallback={null}>
+              <ShoeModel proxyRef={proxyRef} />
+              <ContactShadows
+                position={[0, -1.05, 0]}
+                opacity={0.9}
+                scale={4.5}
+                blur={2.5}
+                far={4}
+                color="#000000"
+              />
+            </Suspense>
+          </Canvas>
+        </div>
+      </section>
+    </div>
   );
 }
 

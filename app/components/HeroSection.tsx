@@ -2,96 +2,118 @@
 
 import React, { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export default function HeroSection() {
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const shoes = [
+  { id: 2, name: "SAND", subtitle: "Desert Utility" },
+  { id: 3, name: "AMETHYST", subtitle: "Synthetic Violet" },
+  { id: 4, name: "STEALTH", subtitle: "Matte Carbon" },
+  { id: 5, name: "CRIMSON", subtitle: "Industrial Blood" },
+];
+
+export default function HorizontalScroll() {
+  const triggerRef = useRef<HTMLDivElement>(null); // FIX: Neuer Wrapper-Ref
   const sectionRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
-    if (!sectionRef.current) return;
+    if (!triggerRef.current || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Background Video Reveal
-      gsap.fromTo(
-        ".hero-video",
-        { scale: 1.2, filter: "brightness(0) contrast(1.5)" },
-        {
-          scale: 1,
-          filter: "brightness(0.7) contrast(1.2)",
-          duration: 2.5,
-          ease: "power4.out",
+      const shoeEls = gsap.utils.toArray(".seq-shoe");
+      const textEls = gsap.utils.toArray(".seq-text");
+
+      gsap.set(shoeEls.slice(1), { xPercent: -30, opacity: 0 });
+      gsap.set(textEls.slice(1), { xPercent: -10, opacity: 0 });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: triggerRef.current, // Auslöser ist der Wrapper
+          pin: sectionRef.current, // Gepinnnt wird die Sektion
+          scrub: 1,
+          start: "top top",
+          end: "+=500%",
+          anticipatePin: 1, // Verhindert das Reinstolpern der Animation
         },
-      );
+      });
 
-      // Text Reveal & Fade Out (Als Timeline!)
-      const textTl = gsap.timeline({ delay: 0.5 });
+      shoes.forEach((_, i) => {
+        if (i === 0) return;
 
-      textTl
-        .to(".hero-text-line", {
-          y: 0,
-          yPercent: 0,
-          rotate: 0,
-          duration: 1.5,
-          stagger: 0.1,
-          ease: "expo.out",
-        })
-        .to(
-          ".hero-text-line",
-          {
-            autoAlpha: 0,
-            duration: 0.5,
-            ease: "power2.inOut",
-          },
-          "+=2",
+        const label = `step${i}`;
+
+        tl.to(
+          shoeEls[i - 1] as HTMLElement,
+          { xPercent: 0, opacity: 0, duration: 1, ease: "power2.inOut" },
+          label,
         );
-    }, sectionRef);
+        tl.to(
+          textEls[i - 1] as HTMLElement,
+          { xPercent: 10, opacity: 0, duration: 1, ease: "power2.inOut" },
+          label,
+        );
+
+        tl.to(
+          shoeEls[i] as HTMLElement,
+          { xPercent: 0, opacity: 1, duration: 1, ease: "power2.inOut" },
+          label,
+        );
+        tl.to(
+          textEls[i] as HTMLElement,
+          { xPercent: 0, opacity: 1, duration: 1, ease: "power2.inOut" },
+          label,
+        );
+
+        tl.to({}, { duration: 0.1 });
+      });
+    }, triggerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative w-full h-dvh overflow-hidden bg-black"
-    >
-      {/* 
-        SENIOR FIX: CSS Hack gegen iOS Low Power Mode.
-        Versteckt den nativen dicken Play-Button komplett!
-      */}
-      <style>{`
-        video::-webkit-media-controls-start-playback-button {
-          display: none !important;
-          -webkit-appearance: none !important;
-        }
-        video::-webkit-media-controls {
-          display: none !important;
-        }
-      `}</style>
-
-      {/* 
-        SENIOR FIX 2: pointer-events-none
-        Verhindert, dass der User aus Versehen auf das Video tippt und die 
-        nativen iOS-Controls (Vollbild etc.) aufpoppen. Es ist nur ein Hintergrund!
-      */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <video
-          src="/video/header_hero.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          controls={false}
-          disablePictureInPicture
-          className="hero-video w-full h-full object-cover grayscale-20"
-        />
-      </div>
-
-      <div className="relative z-10 w-full h-full flex flex-col justify-center items-center text-center px-4 mt-16 md:mt-20 pointer-events-none">
-        <div className="overflow-hidden p-2 w-full flex justify-center">
-          <h1 className="hero-text-line translate-y-[200%] rotate-[5deg] font-['Anton'] text-[12vw] md:text-[9vw] leading-[0.8] text-[#c4c3c3] text-shadow-emerald-600 uppercase tracking-tighter mix-blend-overlay whitespace-nowrap ">
-            TIME LESS
-          </h1>
+    // FIX: Wrapper div fängt das Scroll-Recalculate ab
+    <div ref={triggerRef} className="w-full">
+      <section
+        id="editions"
+        ref={sectionRef}
+        // FIX: h-[100vh] zwingt den Browser, bei einem Height-Resize keine Layout-Sprünge zu machen
+        className="relative w-full h-[100vh] bg-[#050505] overflow-hidden border-b border-neutral-900 flex items-center justify-center"
+      >
+        {/* ELEGANTER TEXT */}
+        <div className="absolute top-24 left-6 md:top-32 md:left-24 z-20 w-48 md:w-64 h-24">
+          {shoes.map((shoe, index) => (
+            <div
+              key={shoe.id}
+              className={`seq-text absolute top-0 left-0 w-full flex flex-col ${index === 0 ? "opacity-100" : "opacity-0"}`}
+            >
+              <h2 className="font-['Anton'] text-4xl md:text-5xl text-white uppercase tracking-wider">
+                {shoe.name}
+              </h2>
+              <p className="font-['Space_Grotesk'] text-[10px] md:text-xs font-bold tracking-[0.2em] md:tracking-[0.3em] text-neutral-500 uppercase mt-2">
+                {shoe.subtitle} // 00{index + 1}
+              </p>
+            </div>
+          ))}
         </div>
-      </div>
-    </section>
+
+        {/* DIE SCHUHE */}
+        <div className="relative z-10 w-full max-w-5xl aspect-square md:aspect-video flex items-center justify-center mt-16 md:mt-0">
+          {shoes.map((shoe, index) => (
+            <img
+              key={shoe.id}
+              src={`/images/shoe_${shoe.id}.png`}
+              alt={`Gravity Shoe ${shoe.name}`}
+              className={`seq-shoe absolute w-[90%] md:w-[90%] h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] will-change-transform ${
+                index === 0 ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
