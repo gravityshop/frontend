@@ -50,13 +50,6 @@ export function TopHeader() {
 
       {/* MITTE: Main Info perfekt zentriert (1/3) */}
       <div className="w-1/3 flex flex-col items-center text-center pointer-events-auto">
-        <h1 className="font-['Anton'] text-4xl xl:text-5xl text-white uppercase leading-[0.8] tracking-wider drop-shadow-2xl">
-          CONFIGURE
-        </h1>
-        <div className="text-sm xl:text-lg text-neutral-300 font-bold tracking-widest mt-2">
-          € {totalPrice.toFixed(2)}
-        </div>
-
         {/* Kameras */}
         <div className="hidden md:flex gap-1 mt-4 text-[9px] font-bold tracking-[0.2em] uppercase bg-black/40 backdrop-blur-md p-1 rounded border border-white/5 shadow-lg">
           {(["PROFILE", "FRONT", "HEEL", "TOP"] as const).map((view) => (

@@ -26,7 +26,6 @@ export default function HeroSection() {
       const textTl = gsap.timeline({ delay: 0.5 });
 
       textTl
-        // 1. Text fährt rein (wie vorher)
         .to(".hero-text-line", {
           y: 0,
           yPercent: 0,
@@ -35,8 +34,6 @@ export default function HeroSection() {
           stagger: 0.1,
           ease: "expo.out",
         })
-        // 2. Text verschwindet nach exakt 2 Sekunden Pause
-        // autoAlpha: 0 setzt opacity auf 0 und visibility auf hidden
         .to(
           ".hero-text-line",
           {
@@ -45,7 +42,7 @@ export default function HeroSection() {
             ease: "power2.inOut",
           },
           "+=2",
-        ); // <--- Das "+=2" ist die Magie. Es wartet 2 Sekunden nach dem vorigen Schritt!
+        );
     }, sectionRef);
 
     return () => ctx.revert();
@@ -56,18 +53,39 @@ export default function HeroSection() {
       ref={sectionRef}
       className="relative w-full h-dvh overflow-hidden bg-black"
     >
-      <div className="absolute inset-0 z-0">
+      {/* 
+        SENIOR FIX: CSS Hack gegen iOS Low Power Mode.
+        Versteckt den nativen dicken Play-Button komplett!
+      */}
+      <style>{`
+        video::-webkit-media-controls-start-playback-button {
+          display: none !important;
+          -webkit-appearance: none !important;
+        }
+        video::-webkit-media-controls {
+          display: none !important;
+        }
+      `}</style>
+
+      {/* 
+        SENIOR FIX 2: pointer-events-none
+        Verhindert, dass der User aus Versehen auf das Video tippt und die 
+        nativen iOS-Controls (Vollbild etc.) aufpoppen. Es ist nur ein Hintergrund!
+      */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <video
           src="/video/header_hero.mp4"
           autoPlay
           loop
           muted
           playsInline
+          controls={false}
+          disablePictureInPicture
           className="hero-video w-full h-full object-cover grayscale-20"
         />
       </div>
-      <div className="relative z-10 w-full h-full flex flex-col justify-center items-center text-center px-4 mt-16 md:mt-20">
-        {/* Haupt-Headline: M O N O L I T H */}
+
+      <div className="relative z-10 w-full h-full flex flex-col justify-center items-center text-center px-4 mt-16 md:mt-20 pointer-events-none">
         <div className="overflow-hidden p-2 w-full flex justify-center">
           <h1 className="hero-text-line translate-y-[200%] rotate-[5deg] font-['Anton'] text-[12vw] md:text-[9vw] leading-[0.8] text-[#c4c3c3] text-shadow-emerald-600 uppercase tracking-tighter mix-blend-overlay whitespace-nowrap ">
             TIME LESS
