@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useLayoutEffect, useRef } from "react";
-import Link from "next/link";
 import gsap from "gsap";
 import { COLLECTION_DATA, CollectionShoe } from "@/lib/collections";
 import { ShoeCard } from "../components/ShoeCard";
 import { ProductOverlay } from "../components/ProductOverlay";
+import Navigation from "../components/Navigation"; // NEU: Importiere die Main Nav
 
 export default function CollectionsPage() {
   const pageRef = useRef<HTMLDivElement>(null);
@@ -25,21 +25,14 @@ export default function CollectionsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-dvh bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600 relative overflow-x-hidden"
+      // NEU: pt-32 hinzugefügt, damit der Inhalt nicht hinter der festen Nav verschwindet
+      className="min-h-dvh bg-[#050505] text-white font-['Space_Grotesk'] selection:bg-neutral-600 relative overflow-x-hidden pt-32"
     >
-      <header className="flex justify-between items-center p-6 md:p-12 border-b border-white/10 sticky top-0 bg-[#050505]/90 backdrop-blur-md z-40">
-        <Link
-          href="/"
-          className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-neutral-500 hover:text-white transition-colors"
-        >
-          ← HOME
-        </Link>
-        <div className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-white">
-          GRAVITY // ARCHIVE
-        </div>
-      </header>
+      {/* NEU: Wir nutzen das Nav-Template mit solidem Hintergrund! */}
+      <Navigation variant="solid" />
 
-      <div className="p-6 md:p-12 collection-header mt-8 md:mt-16 text-center max-w-4xl mx-auto">
+      {/* Dein restlicher Code bleibt komplett unangetastet */}
+      <div className="p-6 md:p-12 collection-header text-center max-w-4xl mx-auto">
         <h1 className="font-['Anton'] text-5xl md:text-8xl uppercase leading-none tracking-wider drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
           CURATED DROPS
         </h1>
@@ -50,7 +43,7 @@ export default function CollectionsPage() {
         </p>
       </div>
 
-      <div className="px-4 md:px-12 pb-32 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 max-w-[1800px] mx-auto w-full">
+      <div className="px-4 md:px-12 pb-32 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 max-w-[1800px] mx-auto w-full mt-8">
         {COLLECTION_DATA.map((shoe, index) => (
           <ShoeCard
             key={shoe.id}
