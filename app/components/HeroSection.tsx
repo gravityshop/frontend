@@ -23,18 +23,15 @@ export default function HeroSection() {
       );
 
       // Text Reveal
-      gsap.fromTo(
-        ".hero-text-line",
-        { yPercent: 110, rotate: 2 },
-        {
-          yPercent: 0,
-          rotate: 0,
-          duration: 1.5,
-          stagger: 0.1,
-          ease: "expo.out",
-          delay: 0.5,
-        },
-      );
+      gsap.to(".hero-text-line", {
+        y: 0,
+        yPercent: 0,
+        rotate: 0,
+        duration: 1.5,
+        stagger: 0.1,
+        ease: "expo.out",
+        delay: 0.5,
+      });
     }, sectionRef);
 
     return () => ctx.revert();
@@ -58,8 +55,7 @@ export default function HeroSection() {
       <div className="relative z-10 w-full h-full flex flex-col justify-center items-center text-center px-4 mt-16 md:mt-20">
         {/* Haupt-Headline: M O N O L I T H */}
         <div className="overflow-hidden p-2 w-full flex justify-center">
-          {/* Größen leicht reduziert (16vw auf Mobile, 12vw auf Desktop), damit das längere Wort perfekt passt */}
-          <h1 className="hero-text-line font-['Anton'] text-[14vw] md:text-[6vw] leading-[0.8] text-white uppercase tracking-tighter mix-blend-overlay whitespace-nowrap">
+          <h1 className="hero-text-line translate-y-[200%] rotate-[5deg] font-['Anton'] text-[14vw] md:text-[6vw] leading-[0.8] text-white uppercase tracking-tighter mix-blend-overlay whitespace-nowrap">
             A B S O L U T E
           </h1>
         </div>

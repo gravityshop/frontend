@@ -45,13 +45,13 @@ export default function ManifestoSection() {
         "-=1.2",
       );
 
-      tl.fromTo(
+      tl.to(
         ".manifesto-headline",
-        { yPercent: 110, rotate: 2 },
         {
+          y: 0,
           yPercent: 0,
           rotate: 0,
-          duration: 1.2,
+          duration: 1,
           stagger: 0.1,
           ease: "expo.out",
         },
@@ -105,31 +105,16 @@ export default function ManifestoSection() {
 
         <article className="flex flex-col justify-center order-1 lg:order-2">
           <div className="mb-8 md:mb-12">
-            {/* Responsiver negativer Margin (-ml-2 auf Mobile, -ml-11 auf Desktop) */}
             <div className="overflow-hidden p-2 -ml-2 md:-ml-11 pr-52 md:pr-5">
-              <h3 className="manifesto-headline font-['Anton'] text-[13vw] md:text-[12vw] lg:text-[7vw] leading-[0.85] uppercase text-white whitespace-nowrap">
+              <h3 className="manifesto-headline translate-y-[200%] rotate-[5deg] font-['Anton'] text-[13vw] md:text-[12vw] lg:text-[7vw] leading-[0.85] uppercase text-white whitespace-nowrap">
                 STRUCTURAL
               </h3>
             </div>
             <div className="overflow-hidden p-2 -ml-2 md:-ml-11 pr-52 md:pr-5">
-              <h3 className="manifesto-headline font-['Anton'] text-[15vw] md:text-[12vw] lg:text-[7vw] leading-[0.85] uppercase text-neutral-600 whitespace-nowrap">
+              <h3 className="manifesto-headline translate-y-[200%] rotate-[5deg] font-['Anton'] text-[15vw] md:text-[12vw] lg:text-[7vw] leading-[0.85] uppercase text-neutral-600 whitespace-nowrap">
                 INTEGRITY
               </h3>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-6 md:gap-8">
-            <p className="manifesto-p font-['Space_Grotesk'] text-base md:text-2xl text-neutral-300 leading-relaxed max-w-xl">
-              We do not chase temporary aesthetics. Form over hype. Substance
-              over noise. We cast monolithic silhouettes designed for the
-              concrete reality.
-            </p>
-
-            <p className="manifesto-p font-['Space_Grotesk'] text-xs md:text-base text-neutral-500 leading-relaxed max-w-xl pl-4 md:pl-6 border-l-2 border-neutral-800">
-              Every seam, every layer of mesh, every millimeter of rubber is
-              calculated. This is not a trend. This is a permanent shift in
-              streetwear architecture. Welcome to the new weight of footwear.
-            </p>
           </div>
         </article>
       </div>
