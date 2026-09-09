@@ -17,12 +17,12 @@ export default function Home() {
       <Navigation />
       <main>
         <HeroSection />
+        <EditorialOne />
         <ManifestoSection />
         <ProductGridOne />
-        <EditorialOne />
         <ArchiveGrid />
-        <EditorialTwo />
         <HorizontalScroll />
+        <EditorialTwo />
         <CTASection />
       </main>
       <Footer />

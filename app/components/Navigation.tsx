@@ -21,11 +21,21 @@ export default function Navigation() {
   const navRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const tl = useRef<gsap.core.Timeline | null>(null);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Scroll-Listener für das Shrinking-Header-Konzept
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // FIX: y: -30 statt yPercent: -100 verhindert nervige Layout-Sprünge beim Laden
       gsap.fromTo(
         navRef.current,
         { y: -30, opacity: 0 },
@@ -96,45 +106,66 @@ export default function Navigation() {
 
   return (
     <>
+      {/* HEADER: Dynamisches Padding, Frosted Glass, weicher Schatten */}
       <header
         ref={navRef}
-        className={`fixed top-0 left-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center text-white pointer-events-none transition-all duration-500 ${isMenuOpen ? "" : "mix-blend-difference"}`}
+        className={`fixed top-0 left-0 w-full z-50 px-6 md:px-12 flex justify-between items-center text-white pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] 
+        ${
+          isMenuOpen
+            ? "bg-transparent py-6"
+            : isScrolled
+              ? "py-4 bg-[#050505]/70 backdrop-blur-xl border-b border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.3)]"
+              : "py-8 bg-transparent"
+        }`}
       >
-        <div className="pointer-events-auto relative z-50">
+        <div className="pointer-events-auto relative z-50 flex items-center">
           <a
             href="/"
             onClick={scrollToTop}
-            className="font-['Anton'] text-2xl md:text-3xl tracking-widest uppercase hover:opacity-70 transition-opacity cursor-pointer"
+            className="font-['Anton'] text-2xl md:text-3xl tracking-widest uppercase hover:text-neutral-400 transition-colors duration-300 cursor-pointer"
           >
             Gravity
           </a>
         </div>
+
+        {/* DESKTOP NAV: Micro-Interactions mit Underline-Reveal */}
         <nav className="hidden md:flex font-['Space_Grotesk'] gap-10 text-xs font-bold tracking-[0.2em] uppercase pointer-events-auto">
           {MAIN_LINKS.slice(0, 2).map((link) => (
             <a
               key={link.label}
               href={link.href}
               onClick={link.isScroll ? scrollToEditions : undefined}
-              className="hover:text-neutral-500 transition-colors cursor-pointer"
+              className="relative group text-neutral-300 hover:text-white transition-colors duration-300 cursor-pointer pb-1"
             >
               {link.label}
+              <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white transition-all duration-500 ease-out group-hover:w-full"></span>
             </a>
           ))}
         </nav>
-        <div className="hidden md:flex items-center gap-6 pointer-events-auto font-['Space_Grotesk'] text-[6px] md:text-xs font-bold tracking-[0.2em] uppercase">
+
+        {/* RIGHT ACTIONS */}
+        <div className="hidden md:flex items-center gap-8 pointer-events-auto font-['Space_Grotesk'] text-[6px] md:text-xs font-bold tracking-[0.2em] uppercase">
           <Link
             href="/login"
-            className="hover:text-neutral-500 transition-colors"
+            className="relative group text-neutral-300 hover:text-white transition-colors duration-300 pb-1"
           >
             Log In
+            <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white transition-all duration-500 ease-out group-hover:w-full"></span>
           </Link>
+
+          {/* CONFIGURE BUTTON: Awwwards Wipe Effect */}
           <Link
             href="/configurator"
-            className="border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors duration-500 whitespace-nowrap"
+            className="relative overflow-hidden border border-white/20 bg-white/5 backdrop-blur-sm px-6 py-3 transition-all duration-500 group"
           >
-            Configure
+            <span className="absolute inset-0 w-full h-full bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]"></span>
+            <span className="relative z-10 text-white group-hover:text-black transition-colors duration-500">
+              Configure
+            </span>
           </Link>
         </div>
+
+        {/* MOBILE MENU BUTTON */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="md:hidden flex flex-col justify-center items-end gap-1.5 w-8 h-8 z-50 pointer-events-auto relative group"
@@ -148,10 +179,11 @@ export default function Navigation() {
         </button>
       </header>
 
+      {/* OVERLAY MENU */}
       <div
         ref={overlayRef}
         style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" }}
-        className="fixed inset-0 z-40 bg-[#050505] flex flex-col justify-between px-6 pt-32 pb-12 font-['Space_Grotesk']"
+        className="fixed inset-0 z-40 bg-[#050505]/95 backdrop-blur-3xl flex flex-col justify-between px-6 pt-32 pb-12 font-['Space_Grotesk']"
       >
         <nav className="flex flex-col gap-6 mt-8">
           {MAIN_LINKS.map((link) => (
@@ -161,7 +193,7 @@ export default function Navigation() {
                 onClick={
                   link.isScroll ? scrollToEditions : () => setIsMenuOpen(false)
                 }
-                className="menu-link-item block font-['Anton'] text-4xl uppercase tracking-wider text-white hover:text-neutral-500 transition-colors"
+                className="menu-link-item block font-['Anton'] text-5xl uppercase tracking-wider text-neutral-400 hover:text-white transition-colors duration-300"
               >
                 {link.label}
               </a>
@@ -175,7 +207,7 @@ export default function Navigation() {
                 key={link.label}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="menu-secondary-item text-xs font-bold tracking-[0.2em] uppercase text-neutral-400 hover:text-white transition-colors w-fit"
+                className="menu-secondary-item text-xs font-bold tracking-[0.2em] uppercase text-neutral-500 hover:text-white transition-colors w-fit"
               >
                 {link.label}
               </Link>

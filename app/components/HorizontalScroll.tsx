@@ -45,7 +45,7 @@ export default function HorizontalScroll() {
 
         tl.to(
           shoeEls[i - 1] as HTMLElement,
-          { xPercent: 30, opacity: 0, duration: 1, ease: "power2.inOut" },
+          { xPercent: 0, opacity: 0, duration: 1, ease: "power2.inOut" },
           label,
         );
         tl.to(
@@ -109,7 +109,7 @@ export default function HorizontalScroll() {
             src={`/images/shoe_${shoe.id}.png`}
             alt={`Gravity Shoe ${shoe.name}`}
             // w-[90%] auf Mobile, w-[70%] auf Desktop
-            className={`seq-shoe absolute w-[90%] md:w-[70%] h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] will-change-transform ${
+            className={`seq-shoe absolute w-[90%] md:w-[90%] h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] will-change-transform ${
               index === 0 ? "opacity-100" : "opacity-0"
             }`}
           />

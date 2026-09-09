@@ -40,7 +40,7 @@ const CTASection = () => {
       );
 
       gsap.to(".marquee-left", {
-        xPercent: -30,
+        xPercent: -10,
         ease: "none",
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -84,7 +84,7 @@ const CTASection = () => {
         {
           scale: 1,
           opacity: 1,
-          duration: 1.2,
+          duration: 0.4,
           ease: "back.out(2)",
           scrollTrigger: {
             trigger: sectionRef.current,

@@ -19,7 +19,7 @@ export default function EditorialTwo() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top 70%", // Startet, wenn die Sektion zu 70% sichtbar ist
+          start: "top 70%",
           toggleActions: "play none none none",
         },
       });
@@ -48,13 +48,14 @@ export default function EditorialTwo() {
         "-=1.2",
       );
 
-      // Headline Reveal
+      // Headline Reveal (FIX: yPercent auf 140, opacity in beiden auf 1)
       tl.fromTo(
         ".ed2-headline",
-        { yPercent: 110, rotate: 2 },
+        { yPercent: 140, rotate: 2, opacity: 1 },
         {
           yPercent: 0,
           rotate: 0,
+          opacity: 1,
           duration: 1.2,
           stagger: 0.1,
           ease: "expo.out",
@@ -62,7 +63,7 @@ export default function EditorialTwo() {
         "-=1.5",
       );
 
-      // Paragraphen Reveal
+      // Paragraphen Reveal (FIX: startet bei opacity: 0, da wir es in Tailwind verstecken)
       tl.fromTo(
         ".ed2-p",
         { opacity: 0, y: 30 },
@@ -93,30 +94,35 @@ export default function EditorialTwo() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 w-full max-w-screen-2xl mx-auto">
         {/* ==========================================
-            ARTIKEL 1: H3 Headline & 2 Paragrafen (Jetzt LINKS: order-2 lg:order-1)
+            ARTIKEL 1: H3 Headline & 2 Paragrafen
         ========================================== */}
         <article className="flex flex-col justify-center order-2 lg:order-1">
           <div className="mb-12">
-            <div className="overflow-hidden p-2 -ml-2 pr-5">
-              <h3 className="ed2-headline font-['Anton'] text-[14vw] lg:text-[7vw] leading-[0.85] uppercase text-white whitespace-nowrap">
+            {/* FIX: pt-4 px-2 pb-0 statt p-2, damit unten sauber abgeschnitten wird */}
+            <div className="overflow-hidden pt-4 px-2 pb-0 -ml-2 pr-5">
+              {/* FIX: opacity-0 gegen FOUC */}
+              <h3 className="ed2-headline opacity-0 font-['Anton'] text-[14vw] lg:text-[7vw] leading-[0.85] uppercase text-white whitespace-nowrap">
                 PHYSICAL
               </h3>
             </div>
-            <div className="overflow-hidden p-2 -ml-2 pr-5">
-              <h3 className="ed2-headline font-['Anton'] text-[14vw] lg:text-[7vw] leading-[0.85] uppercase text-neutral-600 whitespace-nowrap">
+            {/* FIX: pt-4 px-2 pb-0 statt p-2 */}
+            <div className="overflow-hidden pt-4 px-2 pb-0 -ml-2 pr-5">
+              {/* FIX: opacity-0 gegen FOUC */}
+              <h3 className="ed2-headline opacity-0 font-['Anton'] text-[14vw] lg:text-[7vw] leading-[0.85] uppercase text-neutral-600 whitespace-nowrap">
                 PRESENCE
               </h3>
             </div>
           </div>
 
           <div className="flex flex-col gap-8">
-            <p className="ed2-p font-['Space_Grotesk'] text-lg md:text-2xl text-neutral-300 leading-relaxed max-w-xl">
+            {/* FIX: opacity-0 gegen FOUC */}
+            <p className="ed2-p opacity-0 font-['Space_Grotesk'] text-lg md:text-2xl text-neutral-300 leading-relaxed max-w-xl">
               An unapologetic return to tangible reality. In a digital void,
               gravity is the only truth. We engineer weight, texture, and
               stance.
             </p>
-
-            <p className="ed2-p font-['Space_Grotesk'] text-sm md:text-base text-neutral-500 leading-relaxed max-w-xl pl-6 border-l-2 border-neutral-800">
+            {/* FIX: opacity-0 gegen FOUC */}
+            <p className="ed2-p opacity-0 font-['Space_Grotesk'] text-sm md:text-base text-neutral-500 leading-relaxed max-w-xl pl-6 border-l-2 border-neutral-800">
               Our aesthetic is anchored in the brutalist principles of mass and
               void. The silhouette demands space. It does not ask for permission
               to exist. This is the foundation of the Gravity network.
@@ -125,7 +131,7 @@ export default function EditorialTwo() {
         </article>
 
         {/* ==========================================
-            ARTIKEL 2: Bild & Paragraf (Jetzt RECHTS: order-1 lg:order-2)
+            ARTIKEL 2: Bild & Paragraf
         ========================================== */}
         <article className="flex flex-col gap-8 justify-center order-1 lg:order-2">
           <div className="ed2-image-wrapper relative w-full overflow-hidden bg-[#0a0a0a]">
@@ -135,7 +141,8 @@ export default function EditorialTwo() {
               className="ed2-image w-full h-full object-cover"
             />
           </div>
-          <p className="ed2-p font-['Space_Grotesk'] text-neutral-400 text-xs md:text-sm font-bold tracking-[0.2em] uppercase max-w-md border-t border-neutral-800 pt-6">
+          {/* FIX: opacity-0 gegen FOUC */}
+          <p className="ed2-p opacity-0 font-['Space_Grotesk'] text-neutral-400 text-xs md:text-sm font-bold tracking-[0.2em] uppercase max-w-md border-t border-neutral-800 pt-6">
             Gravity Network // Grounded in the brutal reality of concrete and
             urban decay.
           </p>

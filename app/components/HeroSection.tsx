@@ -22,16 +22,30 @@ export default function HeroSection() {
         },
       );
 
-      // Text Reveal
-      gsap.to(".hero-text-line", {
-        y: 0,
-        yPercent: 0,
-        rotate: 0,
-        duration: 1.5,
-        stagger: 0.1,
-        ease: "expo.out",
-        delay: 0.5,
-      });
+      // Text Reveal & Fade Out (Als Timeline!)
+      const textTl = gsap.timeline({ delay: 0.5 });
+
+      textTl
+        // 1. Text fährt rein (wie vorher)
+        .to(".hero-text-line", {
+          y: 0,
+          yPercent: 0,
+          rotate: 0,
+          duration: 1.5,
+          stagger: 0.1,
+          ease: "expo.out",
+        })
+        // 2. Text verschwindet nach exakt 2 Sekunden Pause
+        // autoAlpha: 0 setzt opacity auf 0 und visibility auf hidden
+        .to(
+          ".hero-text-line",
+          {
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: "power2.inOut",
+          },
+          "+=2",
+        ); // <--- Das "+=2" ist die Magie. Es wartet 2 Sekunden nach dem vorigen Schritt!
     }, sectionRef);
 
     return () => ctx.revert();
@@ -55,17 +69,9 @@ export default function HeroSection() {
       <div className="relative z-10 w-full h-full flex flex-col justify-center items-center text-center px-4 mt-16 md:mt-20">
         {/* Haupt-Headline: M O N O L I T H */}
         <div className="overflow-hidden p-2 w-full flex justify-center">
-          <h1 className="hero-text-line translate-y-[200%] rotate-[5deg] font-['Anton'] text-[14vw] md:text-[6vw] leading-[0.8] text-white uppercase tracking-tighter mix-blend-overlay whitespace-nowrap">
-            A B S O L U T E
+          <h1 className="hero-text-line translate-y-[200%] rotate-[5deg] font-['Anton'] text-[12vw] md:text-[9vw] leading-[0.8] text-[#c4c3c3] text-shadow-emerald-600 uppercase tracking-tighter mix-blend-overlay whitespace-nowrap ">
+            TIME LESS
           </h1>
-        </div>
-
-        {/* Subtitle */}
-        <div className="overflow-hidden mt-6 md:mt-8 px-4">
-          <p className="hero-text-line font-['Space_Grotesk'] text-neutral-300 text-[10px] md:text-sm lg:text-lg max-w-xl font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase leading-relaxed">
-            Defy The Given. Form Over Hype. <br className="hidden md:block" />{" "}
-            Substance Over Noise.
-          </p>
         </div>
       </div>
     </section>

@@ -20,7 +20,6 @@ const ShoeModel = ({
   const modelRef = useRef<THREE.Group>(null);
   const lightRef = useRef<THREE.DirectionalLight>(null);
 
-  // Deine Farben
   const colors = useMemo(
     () => [
       new THREE.Color("#ea580c"),
@@ -99,16 +98,18 @@ export default function ArchiveGrid() {
     if (!sectionRef.current) return;
 
     const ctx = gsap.context(() => {
+      // 1. FIX: KEIN SCALE! Nur noch Opacity Fade. Das rettet die WebGL Performance.
       gsap.fromTo(
         ".shoe-reveal",
-        { opacity: 0, scale: 0.8, y: 100 },
+        { opacity: 0 },
         {
           opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 1.8,
-          ease: "expo.out",
-          scrollTrigger: { trigger: sectionRef.current, start: "top 75%" },
+          duration: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 60%",
+          },
         },
       );
 
@@ -116,7 +117,8 @@ export default function ArchiveGrid() {
         scrollTrigger: {
           trigger: sectionRef.current,
           pin: true,
-          scrub: 1,
+          // 2. FIX: Scrub auf 0.1 reduziert (vorher 1). Verhindert, dass der Schuh dem Scrollen "hinterherlaggt".
+          scrub: 0.1,
           start: "top top",
           end: "+=200%",
         },
@@ -135,21 +137,20 @@ export default function ArchiveGrid() {
   return (
     <section
       ref={sectionRef}
-      // h-[100dvh] löst Scroll-Ruckeln auf iOS und Mobile Safari komplett!
+      // 3. FIX: Zurück zu h-dvh ohne extra Wrapper. Clean und stabil.
       className="relative w-full h-dvh bg-[#050505] overflow-hidden border-y border-neutral-900 flex items-center justify-center"
     >
-      {/* TEXT LAYER: bottom-12 statt bottom-100, damit es elegant über dem Schuh schwebt */}
       <div className="absolute bottom-16 md:bottom-24 inset-x-0 z-10 flex flex-col items-center justify-center pointer-events-none">
         <div className="overflow-hidden mt-4 px-4 text-center">
-          <p className="shoe-reveal font-['Space_Grotesk'] text-neutral-400 text-xs md:text-sm font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">
+          <p className="shoe-reveal opacity-0 font-['Space_Grotesk'] text-neutral-400 text-xs md:text-sm font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">
             Scroll to manipulate
           </p>
         </div>
       </div>
 
-      {/* WEBGL LAYER */}
       <div className="shoe-reveal absolute inset-0 z-0 opacity-0">
-        <Canvas camera={{ position: [0, 0, 6], fov: 75 }}>
+        {/* 4. FIX: dpr={[1, 2]} begrenzt die Pixeldichte auf High-Res Displays -> enormer Performance-Boost */}
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 6], fov: 75 }}>
           <ambientLight intensity={0.2} />
           <Environment preset="city" environmentIntensity={0.5} />
           <Suspense fallback={null}>
@@ -157,7 +158,7 @@ export default function ArchiveGrid() {
             <ContactShadows
               position={[0, -1.05, 0]}
               opacity={0.9}
-              scale={4.5} // Dein Scale 5 beibehalten
+              scale={4.5}
               blur={2.5}
               far={4}
               color="#000000"
