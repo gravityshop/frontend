@@ -28,31 +28,33 @@ import { TextEditor } from "../components/TextEditor";
 
 export default function ConfiguratorPage() {
   const uiRef = useRef<HTMLDivElement>(null);
-
-  // Refs für GSAP Kamera & Modell Animation
   const groupRef = useRef<any>(null);
   const controlsRef = useRef<any>(null);
 
   const { editMode, setEditMode } = useConfiguratorStore();
-  const [isMobile, setIsMobile] = useState(false);
+  const [screenSize, setScreenSize] = useState<"mobile" | "laptop" | "desktop">(
+    "desktop",
+  );
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 768) setScreenSize("mobile");
+      else if (width < 1440) setScreenSize("laptop");
+      else setScreenSize("desktop");
+    };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const yOffset = mounted && isMobile ? 0.2 : 0.3;
+  // Schuh perfekt zentrieren, da unten jetzt kein klobiges UI mehr ist!
+  const yOffset = !mounted ? 0 : screenSize === "mobile" ? 0.2 : 0;
 
-  // ==========================================
-  // UI & ZOOM-HINT ANIMATION
-  // ==========================================
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. UI fährt von unten ein
       gsap.fromTo(
         ".conf-ui",
         { opacity: 0, y: 20 },
@@ -66,34 +68,24 @@ export default function ConfiguratorPage() {
         },
       );
 
-      // 2. SENIOR UX: Zoom In/Out Hand Animation (Timeline)
-      const tl = gsap.timeline({ delay: 0.8 }); // Startet kurz nachdem das UI da ist
-
+      const tl = gsap.timeline({ delay: 0.8 });
       tl.fromTo(
         ".zoom-hint",
         { opacity: 0, scale: 0.8, y: 10 },
         { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" },
       )
-        // Der "Zoom In/Out" Pumping Effekt (skaliert hoch und runter)
         .to(".zoom-hint-icon", {
           scale: 1.3,
           duration: 0.4,
-          yoyo: true, // Animiert automatisch wieder zurück auf scale: 1
-          repeat: 3, // 3 Wiederholungen (rein, raus, rein, raus...)
+          yoyo: true,
+          repeat: 3,
           ease: "power2.inOut",
         })
-        // Nach ~2 Sekunden verschwindet der Hint sanft nach oben
         .to(
           ".zoom-hint",
-          {
-            opacity: 0,
-            scale: 0.8,
-            y: -20,
-            duration: 0.5,
-            ease: "power3.in",
-          },
+          { opacity: 0, scale: 0.8, y: -20, duration: 0.5, ease: "power3.in" },
           "+=0.2",
-        ); // Kurze Pause vor dem Verschwinden
+        );
     }, uiRef);
     return () => ctx.revert();
   }, []);
@@ -101,7 +93,7 @@ export default function ConfiguratorPage() {
   return (
     <div className="w-full h-dvh bg-[#050505] overflow-hidden overscroll-none selection:bg-neutral-600 selection:text-white relative font-['Space_Grotesk']">
       <div
-        className={`absolute left-0 right-0 z-0 cursor-move touch-none bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${isMobile ? "top-[-15vh] h-[115dvh]" : "top-0 h-dvh"}`}
+        className={`absolute left-0 right-0 z-0 cursor-move touch-none bg-black bg-[url('/images/studio-bg.jpg')] bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${screenSize === "mobile" ? "top-[-15vh] h-[115dvh]" : "top-0 h-dvh"}`}
       >
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
 
@@ -151,10 +143,10 @@ export default function ConfiguratorPage() {
 
           <OrbitControls
             ref={controlsRef}
-            target={[0, 0.8 + yOffset, 0]}
+            target={[0, 1.5 + yOffset, 0]}
             enablePan={false}
             minDistance={4}
-            maxDistance={6}
+            maxDistance={7}
             maxPolarAngle={Math.PI / 2 - 0.05}
           />
           <EffectComposer enableNormalPass>
@@ -168,15 +160,15 @@ export default function ConfiguratorPage() {
         ref={uiRef}
         className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between"
       >
-        <TopHeader />
+        {/* LINKS: Sidebar (Bleibt links) */}
         <DesktopSidebar />
 
-        {/* ==========================================
-            UX HINT: ZOOM / INTERACT (Immer beim Laden)
-            ========================================== */}
-        <div className="zoom-hint absolute top-[35%] left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-3 opacity-0">
+        {/* OBEN: Top Header (Mittig) */}
+        <TopHeader />
+
+        {/* HINT: Pinch to Zoom (Mitte unten) */}
+        <div className="zoom-hint absolute bottom-[12%] xl:bottom-[15%] left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-3 opacity-0">
           <div className="zoom-hint-icon w-14 h-14 bg-black/40 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-            {/* SVG Hand mit Zeigefinger */}
             <svg
               width="28"
               height="28"
@@ -199,23 +191,34 @@ export default function ConfiguratorPage() {
           </span>
         </div>
 
-        <div className="mt-auto conf-ui pointer-events-auto w-full max-w-7xl mx-auto flex flex-col px-2 pb-2 md:px-8 md:pb-6 relative z-30">
-          <div className="flex gap-4 md:gap-6 mb-1 md:mb-3 text-[9px] xl:text-[10px] font-bold tracking-[0.2em] justify-center md:justify-start drop-shadow-md">
+        {/* ==========================================
+            EDITOR PANEL: GANZ RECHTS & VERTIKAL
+            ========================================== */}
+        <div
+          className="conf-ui pointer-events-auto relative z-30 flex flex-col w-full
+          /* MOBILE: Unten angedockt, volle Breite */
+          mt-auto px-3 pb-3
+          /* DESKTOP/MACBOOK: Schmale vertikale Leiste auf der RECHTEN SEITE, zentriert */
+          md:absolute md:top-1/2 md:-translate-y-1/2 md:right-6 xl:right-10 md:w-[120px] xl:w-[130px] md:mt-0 md:px-0 md:pb-0 md:items-end"
+        >
+          {/* TABS: Auf Mobile horizontal, auf Desktop als vertikales Menü mit Rahmen rechts (wie Sidebar!) */}
+          <div className="flex md:flex-col gap-4 md:gap-2 mb-2 md:mb-3 text-[9px] xl:text-[10px] font-bold tracking-[0.2em] justify-center md:items-end drop-shadow-md md:pr-3">
             <button
               onClick={() => setEditMode("MATERIALS")}
-              className={`transition-colors py-2 ${editMode === "MATERIALS" ? "text-white border-b-2 border-white" : "text-neutral-500"}`}
+              className={`transition-all duration-300 py-1 ${editMode === "MATERIALS" ? "text-white border-b-2 md:border-b-0 md:border-r-2 border-white md:pr-3" : "text-neutral-500 hover:text-neutral-300 md:pr-3 md:border-r-2 md:border-transparent"}`}
             >
               MATERIALS
             </button>
             <button
               onClick={() => setEditMode("TEXT")}
-              className={`transition-colors py-2 ${editMode === "TEXT" ? "text-white border-b-2 border-white" : "text-neutral-500"}`}
+              className={`transition-all duration-300 py-1 ${editMode === "TEXT" ? "text-white border-b-2 md:border-b-0 md:border-r-2 border-white md:pr-3" : "text-neutral-500 hover:text-neutral-300 md:pr-3 md:border-r-2 md:border-transparent"}`}
             >
-              CUSTOM TEXT
+              TEXT
             </button>
           </div>
 
-          <div className="bg-[#050505] backdrop-blur-xl border border-neutral-900 rounded-xl p-3 pt-4 md:p-6 flex flex-col w-full shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+          {/* EDITOR BOX: Begrenzte Höhe für Scroll, schmal, erzwingt vertikales Layout im Child */}
+          <div className="bg-[#050505]/80 backdrop-blur-3xl border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col w-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] md:max-h-[60vh] overflow-y-auto [&::-webkit-scrollbar]:w-0">
             {editMode === "MATERIALS" ? <MaterialEditor /> : <TextEditor />}
           </div>
         </div>

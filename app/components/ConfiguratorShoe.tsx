@@ -63,7 +63,7 @@ const MeshZone = ({
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
-  const [hovered, setHovered] = useState(false); // NEU: State für den Hover-Glow
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     if (matConfig?.textureUrl) {
@@ -89,9 +89,6 @@ const MeshZone = ({
     }
   }, [texture]);
 
-  // ==========================================
-  // SENIOR UX: INTERACTIVE HOVER GLOW
-  // ==========================================
   useEffect(() => {
     if (matRef.current) {
       gsap.to(matRef.current, {
@@ -101,9 +98,6 @@ const MeshZone = ({
     }
   }, [hovered]);
 
-  // ==========================================
-  // SENIOR UX: WAKE-UP SCAN SHIMMER
-  // ==========================================
   useEffect(() => {
     if (matRef.current) {
       // Setzt die Leuchtfarbe auf reines Weiß
@@ -114,7 +108,7 @@ const MeshZone = ({
       // sondern in einer coolen, schimmernden Sequenz (Wave) aufleuchten.
       gsap.fromTo(
         matRef.current,
-        { emissiveIntensity: 0.6 },
+        { emissiveIntensity: 0.2 },
         {
           emissiveIntensity: 0,
           duration: 1.2,
