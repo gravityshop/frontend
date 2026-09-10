@@ -16,10 +16,11 @@ const shoes = [
 ];
 
 export default function HorizontalScroll() {
+  const triggerRef = useRef<HTMLDivElement>(null); // FIX: Neuer Wrapper-Ref
   const sectionRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
-    if (!sectionRef.current) return;
+    if (!triggerRef.current || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
       const shoeEls = gsap.utils.toArray(".seq-shoe");
@@ -30,11 +31,12 @@ export default function HorizontalScroll() {
 
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionRef.current,
-          pin: true,
+          trigger: triggerRef.current, // Auslöser ist der Wrapper
+          pin: sectionRef.current, // Gepinnnt wird die Sektion
           scrub: 1,
           start: "top top",
           end: "+=500%",
+          anticipatePin: 1, // Verhindert das Reinstolpern der Animation
         },
       });
 
@@ -67,54 +69,51 @@ export default function HorizontalScroll() {
 
         tl.to({}, { duration: 0.1 });
       });
-    }, sectionRef);
+    }, triggerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section
-      id="editions"
-      ref={sectionRef}
-      className="relative w-full h-dvh bg-[#050505] overflow-hidden border-b border-neutral-900 flex items-center justify-center"
-    >
-      {/* ==========================================
-          ELEGANTER TEXT
-      ========================================== */}
-      {/* top-24 auf Mobile verhindert Überlappung mit der Nav */}
-      <div className="absolute top-24 left-6 md:top-32 md:left-24 z-20 w-48 md:w-64 h-24">
-        {shoes.map((shoe, index) => (
-          <div
-            key={shoe.id}
-            className={`seq-text absolute top-0 left-0 w-full flex flex-col ${index === 0 ? "opacity-100" : "opacity-0"}`}
-          >
-            <h2 className="font-['Anton'] text-4xl md:text-5xl text-white uppercase tracking-wider">
-              {shoe.name}
-            </h2>
-            <p className="font-['Space_Grotesk'] text-[10px] md:text-xs font-bold tracking-[0.2em] md:tracking-[0.3em] text-neutral-500 uppercase mt-2">
-              {shoe.subtitle} // 00{index + 1}
-            </p>
-          </div>
-        ))}
-      </div>
+    // FIX: Wrapper div fängt das Scroll-Recalculate ab
+    <div ref={triggerRef} className="w-full">
+      <section
+        id="editions"
+        ref={sectionRef}
+        // FIX: h-[100vh] zwingt den Browser, bei einem Height-Resize keine Layout-Sprünge zu machen
+        className="relative w-full h-[100vh] bg-[#050505] overflow-hidden border-b border-neutral-900 flex items-center justify-center"
+      >
+        {/* ELEGANTER TEXT */}
+        <div className="absolute top-24 left-6 md:top-32 md:left-24 z-20 w-48 md:w-64 h-24">
+          {shoes.map((shoe, index) => (
+            <div
+              key={shoe.id}
+              className={`seq-text absolute top-0 left-0 w-full flex flex-col ${index === 0 ? "opacity-100" : "opacity-0"}`}
+            >
+              <h2 className="font-['Anton'] text-4xl md:text-5xl text-white uppercase tracking-wider">
+                {shoe.name}
+              </h2>
+              <p className="font-['Space_Grotesk'] text-[10px] md:text-xs font-bold tracking-[0.2em] md:tracking-[0.3em] text-neutral-500 uppercase mt-2">
+                {shoe.subtitle} // 00{index + 1}
+              </p>
+            </div>
+          ))}
+        </div>
 
-      {/* ==========================================
-          DIE SCHUHE
-      ========================================== */}
-      {/* aspect-square auf Mobile, damit der Schuh Platz hat. mt-12 gleicht die Position aus. */}
-      <div className="relative z-10 w-full max-w-5xl aspect-square md:aspect-video flex items-center justify-center mt-16 md:mt-0">
-        {shoes.map((shoe, index) => (
-          <img
-            key={shoe.id}
-            src={`/images/shoe_${shoe.id}.png`}
-            alt={`Gravity Shoe ${shoe.name}`}
-            // w-[90%] auf Mobile, w-[70%] auf Desktop
-            className={`seq-shoe absolute w-[90%] md:w-[90%] h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] will-change-transform ${
-              index === 0 ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        ))}
-      </div>
-    </section>
+        {/* DIE SCHUHE */}
+        <div className="relative z-10 w-full max-w-5xl aspect-square md:aspect-video flex items-center justify-center mt-16 md:mt-0">
+          {shoes.map((shoe, index) => (
+            <img
+              key={shoe.id}
+              src={`/images/shoe_${shoe.id}.png`}
+              alt={`Gravity Shoe ${shoe.name}`}
+              className={`seq-shoe absolute w-[90%] md:w-[90%] h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] will-change-transform ${
+                index === 0 ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
