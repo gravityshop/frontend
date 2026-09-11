@@ -31,7 +31,7 @@ export default function HorizontalScroll() {
 
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: triggerRef.current, // Auslöser ist der Wrapper
+          trigger: triggerRef.current,
           pin: sectionRef.current, // Gepinnnt wird die Sektion
           scrub: 1,
           start: "top top",
@@ -75,13 +75,12 @@ export default function HorizontalScroll() {
   }, []);
 
   return (
-    // FIX: Wrapper div fängt das Scroll-Recalculate ab
     <div ref={triggerRef} className="w-full">
       <section
         id="editions"
         ref={sectionRef}
         // FIX: h-[100vh] zwingt den Browser, bei einem Height-Resize keine Layout-Sprünge zu machen
-        className="relative w-full h-[100vh] bg-[#050505] overflow-hidden border-b border-neutral-900 flex items-center justify-center"
+        className="relative w-full h-screen bg-[#050505] overflow-hidden border-b border-neutral-900 flex items-center justify-center"
       >
         {/* ELEGANTER TEXT */}
         <div className="absolute top-24 left-6 md:top-32 md:left-24 z-20 w-48 md:w-64 h-24">
