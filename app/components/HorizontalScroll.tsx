@@ -16,7 +16,7 @@ const shoes = [
 ];
 
 export default function HorizontalScroll() {
-  const triggerRef = useRef<HTMLDivElement>(null); // FIX: Neuer Wrapper-Ref
+  const triggerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
